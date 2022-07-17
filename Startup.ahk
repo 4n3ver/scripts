@@ -30,22 +30,22 @@ return
 ; -------------------------------
 ; Periodic scripts
 AfterBurnerWatchDog:
-	Process, Exist, MSIAfterburner.exe ; check to see if MSIAfterburner.exe is running
-	{
-		if ! errorLevel
-		{
-			afterBurnerPath := "D:\scoop\apps\msiafterburner\current\MSIAfterburner.exe"
-			if FileExist(afterBurnerPath)
-			{
-				MsgBox "Starting AfterBurner"
-				Run *RunAs %afterBurnerPath% /s
-			}
-			else
-				MsgBox "MSIAfterburner.exe was not found!"
-		}
-		; else
-		; 	MsgBox "AfterBurner is Running"
-	}
+    Process, Exist, MSIAfterburner.exe ; check to see if MSIAfterburner.exe is running
+    {
+        if ! errorLevel
+        {
+            afterBurnerPath := "D:\scoop\apps\msiafterburner\current\MSIAfterburner.exe"
+            if FileExist(afterBurnerPath)
+            {
+                MsgBox "Starting AfterBurner"
+                Run *RunAs %afterBurnerPath% /s
+            }
+            else
+                MsgBox "MSIAfterburner.exe was not found!"
+        }
+        ; else
+        ; 	MsgBox "AfterBurner is Running"
+    }
 return
 
 ; Mouse Wheel Tab Scroll 4 Chrome
@@ -55,78 +55,78 @@ return
 #IfWinExist ahk_class Chrome_WidgetWin_1
 WheelUp::
 WheelDown::
-	MouseGetPos,, ypos, id
-	WinGetClass, class, ahk_id %id%
-	if (ypos < 45 and InStr(class,"Chrome_WidgetWin"))
-	{
-		IfWinNotActive ahk_id %id%
-			WinActivate ahk_id %id%
-		if A_ThisHotkey = WheelUp
-			Send ^{PgUp}
-		else
-			Send ^{PgDn}
-	}
-	else
-	{
-		if A_ThisHotkey = WheelUp
-			Send {WheelUp}
-		else
-			Send {WheelDown}
-	}
+    MouseGetPos,, ypos, id
+    WinGetClass, class, ahk_id %id%
+    if (ypos < 45 and InStr(class,"Chrome_WidgetWin"))
+    {
+        IfWinNotActive ahk_id %id%
+            WinActivate ahk_id %id%
+        if A_ThisHotkey = WheelUp
+            Send ^{PgUp}
+        else
+            Send ^{PgDn}
+    }
+    else
+    {
+        if A_ThisHotkey = WheelUp
+            Send {WheelUp}
+        else
+            Send {WheelDown}
+    }
 return
 
 ; Warframe
 ; -------------------------------
 #IfWinActive ahk_exe Warframe.x64.exe
 WF_Init:
-	WF_SelectedAbility 		:= 1
-	WF_AbilityActive 		:= False
-	WF_AbilityIntervalMs 	:= [100, 100, 100, 19000]
+    WF_SelectedAbility 		:= 1
+    WF_AbilityActive 		:= False
+    WF_AbilityIntervalMs 	:= [100, 100, 100, 19000]
 return
 
 WF_ActivateAbility:
-	Send, {%WF_SelectedAbility%}
+    Send, {%WF_SelectedAbility%}
 return
 
 WF_PrevAbility:
 WheelLeft::
-	if (!WF_AbilityActive AND WF_SelectedAbility > 1)
-		WF_SelectedAbility--
+    if (!WF_AbilityActive AND WF_SelectedAbility > 1)
+        WF_SelectedAbility--
 return
 
 WF_NextAbility:
 WheelRight::
-	if (!WF_AbilityActive AND WF_SelectedAbility < 4)
-		WF_SelectedAbility++
+    if (!WF_AbilityActive AND WF_SelectedAbility < 4)
+        WF_SelectedAbility++
 return
 
 WF_ToggleAbility:
 MButton::
-	WF_AbilityActive := NOT WF_AbilityActive
-	if (WF_AbilityActive) {
-		gosub WF_ActivateAbility
-		SetTimer, WF_ActivateAbility, % WF_AbilityIntervalMs[WF_SelectedAbility]
-	} else {
-		SetTimer, WF_ActivateAbility, Off
-	}
+    WF_AbilityActive := NOT WF_AbilityActive
+    if (WF_AbilityActive) {
+        gosub WF_ActivateAbility
+        SetTimer, WF_ActivateAbility, % WF_AbilityIntervalMs[WF_SelectedAbility]
+    } else {
+        SetTimer, WF_ActivateAbility, Off
+    }
 return
 
 WF_AutoAltFire:
 F14::
-	while GetKeyState("F14","P")
-	{
-		Send, 	{NumpadDiv}
-		Sleep, 	30
-	}
+    while GetKeyState("F14","P")
+    {
+        Send, 	{NumpadDiv}
+        Sleep, 	30
+    }
 return
 
 WF_AutoFire:
 F15::
-	while GetKeyState("F15","P")
-	{
-		Send, 	{NumpadMult}
-		Sleep,	30
-	}
+    while GetKeyState("F15","P")
+    {
+        Send, 	{NumpadMult}
+        Sleep,	30
+    }
 return
 
 WF_Crouch:
@@ -138,9 +138,9 @@ F13::Numpad1
 
 WF_Transference:
 F17::
-	Send, 	{NumpadDel}
-	Sleep, 	100
-	Send, 	2
+    Send, 	{NumpadDel}
+    Sleep, 	100
+    Send, 	2
 return
 
 WF_Necramech:
@@ -152,13 +152,13 @@ F13::Numpad2
 
 WF_WellSpring:
 F17::
-	Send, 	{NumpadDel}
-	Sleep, 	100
-	Send, 	1
-	Sleep, 	750
-	Send, 	1
-	Sleep, 	1300
-	Send, 	{NumpadDel}
+    Send, 	{NumpadDel}
+    Sleep, 	100
+    Send, 	1
+    Sleep, 	750
+    Send, 	1
+    Sleep, 	1300
+    Send, 	{NumpadDel}
 return
 
 WF_ArchGun:

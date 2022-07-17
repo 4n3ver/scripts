@@ -2,11 +2,6 @@
  # https://github.com/nodesource/distributions/blob/master/README.md#debinstall
 curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 
-# yarnpkg PPA
-# https://classic.yarnpkg.com/en/docs/install/#debian-stable
-curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-
 # dotnet PPA
 # https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#2004-
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
@@ -46,16 +41,29 @@ sudo apt install -y \
     samba \
     openssh-server
 
-git config --global color.ui true
+git config --global credential.helper "/mnt/d/scoop/apps/git/current/mingw64/libexec/git-core/git-credential-manager-core.exe"
+
 git config --global user.email "4n3ver@reborn.com"
 git config --global user.name "4n3ver"
-git config --global core.editor "code --wait"
-git config --global core.ignorecase false
+
 git config --global core.autocrlf false
+git config --global core.editor "code --wait"
 git config --global core.eol lf
+git config --global core.ignorecase false
+git config --global core.pager delta
+
+git config --global delta.navigate true
+git config --global delta.light false
+git config --global delta.line-numbers true
+
+git config --global interactive.diffFilter "delta --color-only"
+git config --global add.interactive.useBuiltin false
+
+git config --global color.ui true
+git config --global merge.conflictstyle diff3
+git config --global diff.colorMoved default
 git config --global pull.rebase true
 git config --global fetch.prune true
-git config --global credential.helper "/mnt/d/scoop/apps/git/current/mingw64/libexec/git-core/git-credential-manager-core.exe"
 git config --global init.defaultBranch main
 
 # Setup Oh my Posh
