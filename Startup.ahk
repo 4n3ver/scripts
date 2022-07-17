@@ -1,10 +1,11 @@
 ﻿#Persistent
-#NoEnv                                  ; Recommended for performance and compatibility with future AutoHotkey releases.
-#Warn                                   ; Enable warnings to assist with detecting common errors.
-#SingleInstance force                   ; Determines whether a script is allowed to run again when it is already running.
 #InstallMouseHook
 #InstallKeybdHook
-#MaxHotkeysPerInterval 1000             ; Avoids warning messages for high speed wheel users.
+#NoEnv                                  ; Recommended for performance and compatibility with future AutoHotkey releases.
+#Warn                                   ; Enable warnings to assist with detecting common errors.
+#SingleInstance         force           ; Determines whether a script is allowed to run again when it is already running.
+#MaxHotkeysPerInterval  1000            ; Avoids warning messages for high speed wheel users.
+#MaxThreadsPerHotkey    1
 
 ; Auto-Execute Section (AES)
 ; -------------------------------
@@ -13,7 +14,7 @@ SendMode Input                          ; Recommended for new scripts due to its
 SetScrollLockState, AlwaysOff
 SetCapsLockState, AlwaysOff
 SetNumLockState, AlwaysOn
-Menu, Tray, Tip, "Startup.ahk (0.0a)"
+Menu, Tray, Tip, Startup.ahk (0.0a)
 
 ; WatchDogs Initializer
 ; -------------------------------
@@ -37,11 +38,11 @@ AfterBurnerWatchDog:
             afterBurnerPath := "D:\scoop\apps\msiafterburner\current\MSIAfterburner.exe"
             if FileExist(afterBurnerPath)
             {
-                MsgBox "Starting AfterBurner"
+                MsgBox Starting AfterBurner
                 Run *RunAs %afterBurnerPath% /s
             }
             else
-                MsgBox "MSIAfterburner.exe was not found!"
+                MsgBox MSIAfterburner.exe was not found!
         }
         ; else
         ; 	MsgBox "AfterBurner is Running"
@@ -52,23 +53,26 @@ return
 ; -------------------------------
 ; Scroll though Chrome tabs with your mouse wheel when hovering over the tab bar.
 ; if the Chrome window is inactive when starting to scroll, it will be activated.
-#IfWinExist ahk_class Chrome_WidgetWin_1
+#If WinExist("ahk_class Chrome_WidgetWin_1")
 WheelUp::
 WheelDown::
-    MouseGetPos,, ypos, id
-    WinGetClass, class, ahk_id %id%
-    if (ypos < 45 and InStr(class,"Chrome_WidgetWin"))
+    isWheelUp :=    A_ThisHotkey = "WheelUp"
+    CoordMode,      Mouse, Screen
+    MouseGetPos,    mouseXPos, mouseYPos, winId
+    WinGetPos,      winXPos, winYPos, winWidth, winHeight, ahk_id %winId%
+    WinGetClass,    winClass, ahk_id %winId%
+    if mouseYPos - winYPos < 45 AND InStr(winClass, "Chrome_WidgetWin_1")
     {
-        IfWinNotActive ahk_id %id%
-            WinActivate ahk_id %id%
-        if A_ThisHotkey = WheelUp
+        if NOT WinActive("ahk_id" winId)
+            WinActivate ahk_id %winId%
+        if isWheelUp
             Send ^{PgUp}
         else
             Send ^{PgDn}
     }
     else
     {
-        if A_ThisHotkey = WheelUp
+        if isWheelUp
             Send {WheelUp}
         else
             Send {WheelDown}
@@ -81,7 +85,7 @@ return
 WF_Init:
     WF_SelectedAbility 		:= 1
     WF_AbilityActive 		:= False
-    WF_AbilityIntervalMs 	:= [100, 100, 100, 19000]
+    WF_AbilityIntervalMs 	:= [200, 200, 200, 19000]
 return
 
 WF_ActivateAbility:
@@ -89,60 +93,73 @@ WF_ActivateAbility:
 return
 
 WF_PrevAbility:
-WheelLeft::
-    if (!WF_AbilityActive AND WF_SelectedAbility > 1)
+F20::
+    if !WF_AbilityActive AND WF_SelectedAbility > 1
         WF_SelectedAbility--
 return
 
 WF_NextAbility:
-WheelRight::
-    if (!WF_AbilityActive AND WF_SelectedAbility < 4)
+F19::
+    if !WF_AbilityActive AND WF_SelectedAbility < 4
         WF_SelectedAbility++
 return
 
 WF_ToggleAbility:
 MButton::
     WF_AbilityActive := NOT WF_AbilityActive
-    if (WF_AbilityActive) {
-        gosub WF_ActivateAbility
-        SetTimer, WF_ActivateAbility, % WF_AbilityIntervalMs[WF_SelectedAbility]
+    if WF_AbilityActive {
+        gosub       WF_ActivateAbility
+        SetTimer,   WF_ActivateAbility, % WF_AbilityIntervalMs[WF_SelectedAbility]
     } else {
-        SetTimer, WF_ActivateAbility, Off
+        SetTimer,   WF_ActivateAbility, Off
     }
+return
+
+WF_AltFire:
+    Send, {NumpadDiv}
 return
 
 WF_AutoAltFire:
 F14::
-    while GetKeyState("F14","P")
-    {
-        Send, 	{NumpadDiv}
-        Sleep, 	30
-    }
+    thisHotKey :=   A_ThisHotkey
+    SetTimer,       WF_AltFire, 50
+    keyWait,        % thisHotKey
+    SetTimer,       WF_AltFire, Off
+return
+
+WF_Fire:
+    Send, {NumpadMult}
 return
 
 WF_AutoFire:
 F15::
-    while GetKeyState("F15","P")
-    {
-        Send, 	{NumpadMult}
-        Sleep,	30
-    }
+    thisHotKey :=   A_ThisHotkey
+    SetTimer,       WF_Fire, 35
+    keyWait,        % thisHotKey
+    SetTimer,       WF_Fire, Off
 return
 
 WF_Crouch:
 F16::v
 
-F19::l
-F20::\
+WF_TacticalMenu:
+WheelLeft::l
+
+WF_OmniTool:
+WheelRight::\
 
 #if WinActive("ahk_exe Warframe.x64.exe") AND !GetKeyState("RButton", "P")
 WF_Archwing:
 F13::Numpad1
 
 WF_Transference:
-F17::
     Send, 	{NumpadDel}
-    Sleep, 	100
+return
+
+WF_TransferenceFlash:
+F17::
+    gosub   WF_Transference
+    Sleep, 	115
     Send, 	2
 return
 
@@ -155,13 +172,13 @@ F13::Numpad2
 
 WF_WellSpring:
 F17::
-    Send, 	{NumpadDel}
-    Sleep, 	100
+    gosub   WF_Transference
+    Sleep, 	250
     Send, 	1
-    Sleep, 	750
+    Sleep, 	850
     Send, 	1
     Sleep, 	1300
-    Send, 	{NumpadDel}
+    gosub   WF_Transference
 return
 
 WF_ArchGun:
