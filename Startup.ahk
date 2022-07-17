@@ -1,15 +1,15 @@
 ﻿#Persistent
-#NoEnv									; Recommended for performance and compatibility with future AutoHotkey releases.
-#Warn									; Enable warnings to assist with detecting common errors.
-#SingleInstance force					; Determines whether a script is allowed to run again when it is already running.
+#NoEnv                                  ; Recommended for performance and compatibility with future AutoHotkey releases.
+#Warn                                   ; Enable warnings to assist with detecting common errors.
+#SingleInstance force                   ; Determines whether a script is allowed to run again when it is already running.
 #InstallMouseHook
 #InstallKeybdHook
-#MaxHotkeysPerInterval 1000				; Avoids warning messages for high speed wheel users.
+#MaxHotkeysPerInterval 1000             ; Avoids warning messages for high speed wheel users.
 
 ; Auto-Execute Section (AES)
 ; -------------------------------
 ; https://www.autohotkey.com/docs/Scripts.htm#auto
-SendMode Input 							; Recommended for new scripts due to its superior speed and reliability.
+SendMode Input                          ; Recommended for new scripts due to its superior speed and reliability.
 SetScrollLockState, AlwaysOff
 SetCapsLockState, AlwaysOff
 SetNumLockState, AlwaysOn
@@ -18,7 +18,7 @@ Menu, Tray, Tip, "Startup.ahk (0.0a)"
 ; WatchDogs Initializer
 ; -------------------------------
 ; Initializer WatchDog scripts
-SetTimer, AfterBurnerWatchDog, 300000	; Timer for 5 minutes
+SetTimer, AfterBurnerWatchDog, 300000   ; Timer for 5 minutes
 
 ; Profile initializer
 ; -------------------------------
@@ -30,7 +30,7 @@ return
 ; -------------------------------
 ; Periodic scripts
 AfterBurnerWatchDog:
-    Process, Exist, MSIAfterburner.exe ; check to see if MSIAfterburner.exe is running
+    Process, Exist, MSIAfterburner.exe  ; check to see if MSIAfterburner.exe is running
     {
         if ! errorLevel
         {
