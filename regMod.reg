@@ -1,0 +1,32 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\DWM]  ; grey material color accent
+"AccentColor"=dword:ff212121
+"AccentColorInactive"=dword:ff212121
+
+[HKEY_CURRENT_USER\Control Panel\Colors]
+"TitleText"="255 255 255"
+"InactiveTitleText"="207 216 220"
+
+[HKEY_CURRENT_USER\SOFTWARE\Elantech\SmartPad]  ; make shitty touchpad barely bearable
+"SC_Reverse_Enable"=dword:00000001       ; https://linustechtips.com/main/topic/170476-unlocking-elan-touchpad-gestures/
+"SC_Reverse_ShowItem"=dword:00000001    ; https://www.reddit.com/r/Windows10/comments/2ze2no/howto_three_finger_swipe_for_desktop_switching/
+"SC_Speed_Has_8_Level"=dword:00000001
+"SC_InertialScroll_ShowItem"=dword:00000001
+"SC_InertialScroll_Enable"=dword:00000001
+"Momentum_Bounce_Enable"=dword:00000001
+"Momentum_Enable"=dword:00000001
+"GestureEffect_Mode"=dword:00000001
+"DynamicPalmTap_Enable"=dword:00000001
+"EGS_InertialScroll_Enable"=dword:00000001
+"EGS_InertialScroll_ShowItem"=dword:00000001
+"EGS_Reverse_Enable"=dword:00000001
+"EGS_Reverse_ShowItem"=dword:00000001
+"Tap_Three_Finger_ShowItem"=dword:00000001
+"Tap_Three_Finger_Enable"=dword:00000001
+"Tap_Two_Finger_ShowItem"=dword:00000001
+"Tap_Two_Finger_Enable"=dword:00000001
+"ThreeFingerMoveDown_Enable"=dword:00000001
+"ThreeFingerMoveDown_Func"=dword:00000013
+"ThreeFingerMoveUp_Enable"=dword:00000001
+"ThreeFingerMoveUp_Func"=dword:00000016
