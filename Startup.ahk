@@ -77,7 +77,7 @@ return
 
 ; Warframe
 ; -------------------------------
-#IfWinActive ahk_exe Warframe.x64.exe
+#If WinActive("ahk_exe Warframe.x64.exe")
 WF_Init:
     WF_SelectedAbility 		:= 1
     WF_AbilityActive 		:= False
@@ -132,7 +132,10 @@ return
 WF_Crouch:
 F16::v
 
-#if !GetKeyState("RButton", "P")
+F19::l
+F20::\
+
+#if WinActive("ahk_exe Warframe.x64.exe") AND !GetKeyState("RButton", "P")
 WF_Archwing:
 F13::Numpad1
 
@@ -146,7 +149,7 @@ return
 WF_Necramech:
 F18::Numpad3
 
-#if GetKeyState("RButton", "P")
+#if WinActive("ahk_exe Warframe.x64.exe") AND GetKeyState("RButton", "P")
 WF_KDrive:
 F13::Numpad2
 
@@ -163,3 +166,18 @@ return
 
 WF_ArchGun:
 F18::Numpad4
+
+; Fall Guys
+; -------------------------------
+#If WinActive("ahk_exe FallGuys_client_game.exe")
+FG_Emotes:
+F13::1
+F14::2
+F15::3
+F18::4
+
+FG_Dive:
+F17::q
+
+FG_Grab:
+F16::e
