@@ -1,4 +1,5 @@
-﻿#Persistent
+﻿;region
+#Persistent
 #InstallMouseHook
 #InstallKeybdHook
 #NoEnv                                  ; Recommended for performance and compatibility with future AutoHotkey releases.
@@ -7,46 +8,54 @@
 #MaxHotkeysPerInterval  1000            ; Avoids warning messages for high speed wheel users.
 #MaxThreadsPerHotkey    1
 #MaxThreadsBuffer       Off
+;endregion
 
-; Auto-Execute Section (AES)
+; # Auto-Execute Section (AES)
 ; -------------------------------
 ; https://www.autohotkey.com/docs/Scripts.htm#auto
+;region
 SendMode            Input               ; Recommended for new scripts due to its superior speed and reliability.
 SetScrollLockState  AlwaysOff
 SetCapsLockState    AlwaysOff
 SetNumLockState     AlwaysOn
-Menu, Tray, Tip, Startup.ahk (0.0a)
+Menu,               Tray, Tip, Startup.ahk (0.0a)
 
-; WatchDogs Initializer
+; ## WatchDogs Initializer
 ; -------------------------------
 ; Initializer WatchDog scripts
+;region
 SetTimer, AfterBurnerWatchDog, 300000   ; Timer for 5 minutes
+;endregion
 
-; Profile initializer
+; ## Profile initializer
 ; -------------------------------
 ; For profile that requires initialization
+;region
 Gosub WF_Init
-return
+;endregion
 
-; Commons
+return
+;endregion
+
+; # Commons
 ; -------------------------------
+; General utilities.
+;region
 class AutoFire {
     __New(key, delay = 200) {
         this.key    := key
         this.delay  := -delay
         this.active := False
-        this.fire   := this.Fire.Bind(this)
+        this._fire  := this.Fire.Bind(this)
     }
 
     Fire() {
+        fire    := this._fire
         key     := this.key
-        fire    := this.fire
         delay   := this.delay
+        Send % key
         if this.active {
-            Send % key
             SetTimer, % fire, % delay
-        } else {
-            this.Disable()
         }
     }
 
@@ -54,18 +63,26 @@ class AutoFire {
         key         := this.key
         this.active := True
         this.Fire()
-        KeyWait, % key
+        KeyWait % key
         this.Disable()
     }
 
     Disable() {
         this.active := False
     }
-}
 
-; WatchDogs
+    __Delete() {
+        fire := this._fire
+        SetTimer, % fire, Off
+        this.Disable()
+    }
+}
+;endregion
+
+; # WatchDogs
 ; -------------------------------
-; Periodic scripts
+; Periodic scripts.
+;region
 AfterBurnerWatchDog:
     Process, Exist, MSIAfterburner.exe  ; check to see if MSIAfterburner.exe is running
     {
@@ -81,11 +98,13 @@ AfterBurnerWatchDog:
         ;   MsgBox "AfterBurner is Running"
     }
 return
+;endregion
 
-; Mouse Wheel Tab Scroll 4 Chrome
+; # Mouse Wheel Tab Scroll 4 Chrome
 ; -------------------------------
 ; Scroll though Chrome tabs with your mouse wheel when hovering over the tab bar.
 ; if the Chrome window is inactive when starting to scroll, it will be activated.
+;region
 #If WinExist("ahk_class Chrome_WidgetWin_1")
 WheelUp::
 WheelDown::
@@ -108,16 +127,19 @@ WheelDown::
             Send {WheelDown}
     }
 return
+;endregion
 
-; Game Profiles
+; # Game Profiles
 ; -------------------------------
 ; Top Buttons               : F19, F20
 ; Side Buttons - Top Row    : F13, F14, F15
 ; Side Buttons - Bottom Row : F18, F17, F16
 ; Shift Layer Button        : RButton
+;region
 
-; Warframe
+; ## Warframe
 ; -------------------------------
+;region
 #If WinActive("ahk_exe Warframe.x64.exe") OR WinActive("ahk_exe Notepad.exe")
 class WF_AutoAbility {
     static MAX      := 4
@@ -127,7 +149,7 @@ class WF_AutoAbility {
     __New() {
         this.selectedAbility    := WF_AutoAbility.MIN
         this.abilityActive      := False
-        this.activate           := this.Activate.Bind(this)
+        this._activate          := this.Activate.Bind(this)
     }
 
     SelectNext() {
@@ -146,7 +168,7 @@ class WF_AutoAbility {
 
     Toggle() {
         this.abilityActive  := NOT this.abilityActive
-        activate            := this.activate
+        activate            := this._activate
         if this.abilityActive {
             this.Activate()
             SetTimer, % activate, % WF_AutoAbility.DELAY_MS[this.selectedAbility]
@@ -154,28 +176,33 @@ class WF_AutoAbility {
             SetTimer, % activate, Off
         }
     }
+
+    __Delete() {
+        activate := this._activate
+        SetTimer, % activate, Off
+    }
 }
 
 WF_Init:
-    WF_Ability  := new WF_AutoAbility()
-    WF_AltFire  := new AutoFire("{NumpadDiv}", 50)
-    WF_Fire     := new AutoFire("{NumpadMult}", 35)
+    WF_ability  := new WF_AutoAbility()
+    WF_altFire  := new AutoFire("{NumpadDiv}", 50)
+    WF_fire     := new AutoFire("{NumpadMult}", 35)
 return
 
 WF_PrevAbility:
-F20::WF_Ability.SelectPrev()
+F20::WF_ability.SelectPrev()
 
 WF_NextAbility:
-F19::WF_Ability.SelectNext()
+F19::WF_ability.SelectNext()
 
 WF_ToggleAbility:
-MButton::WF_Ability.Toggle()
+MButton::WF_ability.Toggle()
 
 WF_AutoAltFire:
-F14::WF_AltFire.Enable()
+F14::WF_altFire.Enable()
 
 WF_AutoFire:
-F15::WF_Fire.Enable()
+F15::WF_fire.Enable()
 
 WF_Crouch:
 F16::v
@@ -222,9 +249,11 @@ return
 
 WF_ArchGun:
 F18::Numpad4
+;endregion
 
-; Fall Guys
+; ## Fall Guys
 ; -------------------------------
+;region
 #If WinActive("ahk_exe FallGuys_client_game.exe")
 FG_Emotes:
 F13::1
@@ -237,3 +266,5 @@ F17::q
 
 FG_Grab:
 F16::e
+;endregion
+;endregion
