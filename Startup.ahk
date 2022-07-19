@@ -19,14 +19,19 @@
 SetScrollLockState  AlwaysOff
 SetCapsLockState    AlwaysOff
 SetNumLockState     AlwaysOn
+CoordMode,          ToolTip, Screen
+CoordMode,          Pixel, Screen
+CoordMode,          Mouse, Screen
+CoordMode,          Caret, Screen
+CoordMode,          Menu, Screen
 Menu,               Tray, Tip, Startup.ahk (0.0a)
 
 ; ## Profile initializer
 ; -------------------------------
 ; For profile that requires initialization
 ;region
-Gosub Init
-Gosub WF_Init
+Init()
+WF_Init()
 ;endregion
 
 return
@@ -36,10 +41,10 @@ return
 ; -------------------------------
 ; General utilities.
 ;region
-AutoFire(srcKey, targetKey, delay = 100) {
+AutoFire(srcKey, targetKey, delay := 100) {
     while GetKeyState(srcKey, "P") {
-        SendInput   % targetKey
-        Sleep       % delay
+        Send    % targetKey
+        Sleep   % delay
     }
 }
 
@@ -52,10 +57,14 @@ HideToolTip() {
     ToolTip
 }
 
-ShowToolTip(msg, duration = 0) {
-    ToolTip % msg
+ShowToolTip(msg, duration := 0, x := "", y := "", id := 1) {
+    ToolTip         % msg, % x, % y, % id
     if duration > 0
         SetTimer, HideToolTip, % -duration
+}
+
+ShowCenteredToolTip(msg, duration := 0, id := 1) {
+    ShowToolTip(msg, duration, A_ScreenWidth / 2, A_ScreenHeight / 2, id)
 }
 
 HideTrayTip() {
@@ -67,27 +76,32 @@ HideTrayTip() {
     }
 }
 
-ShowTrayTip(title, msg, duration = 0, options = 0) {
+ShowTrayTip(title, msg, duration := 0, options := 0) {
     TrayTip, % title, % msg, % duration, % options
     if duration > 0
         SetTimer, HideTrayTip, % -duration
 }
 
-ShowInfoTrayTip(title, msg, duration = 0) {
+ShowInfoTrayTip(title, msg, duration := 0) {
     ShowTrayTip(title, msg, duration, 1 + 16)
 }
 
-ShowWarnTrayTip(title, msg, duration = 0) {
+ShowWarnTrayTip(title, msg, duration := 0) {
     ShowTrayTip(title, msg, duration, 2)
 }
 
-ShowErrorTrayTip(title, msg, duration = 0) {
+ShowErrorTrayTip(title, msg, duration := 0) {
     ShowTrayTip(title, msg, duration, 3 + 32)
 }
 ;endregion
 
 ; # Default Profile
 ; -------------------------------
+;region
+Init() {
+    SetTimer, AfterBurnerWatchDog, 300000   ; Timer for 5 minutes
+}
+
 AfterBurnerWatchDog() {
     Process, Exist, MSIAfterburner.exe      ; check to see if MSIAfterburner.exe is running
     {
@@ -105,10 +119,6 @@ AfterBurnerWatchDog() {
     }
 }
 
-Init:
-    SetTimer, AfterBurnerWatchDog, 300000   ; Timer for 5 minutes
-return
-
 AutoClearClipboard:
 ~^c::SetTimer, ClearClipboard, -900000      ; Clear clipboard 15 minutes after copying
 
@@ -120,25 +130,23 @@ AutoClearClipboard:
 #If WinExist("ahk_class Chrome_WidgetWin_1")
 WheelUp::
 WheelDown::
-    isWheelUp       := A_ThisHotkey = "WheelUp"
-    CoordMode,      Mouse, Screen
-    MouseGetPos,    mouseXPos, mouseYPos, winId
-    WinGetPos,      winXPos, winYPos, winWidth, winHeight, ahk_id %winId%
-    WinGetClass,    winClass, ahk_id %winId%
-    if mouseYPos - winYPos < 45 AND InStr(winClass, "Chrome_WidgetWin_1") {
-        if NOT WinActive("ahk_id" winId)
-            WinActivate ahk_id %winId%
-        if isWheelUp
-            SendInput ^{PgUp}
-        else
-            SendInput ^{PgDn}
-    } else {
-        if isWheelUp
-            SendInput {WheelUp}
-        else
-            SendInput {WheelDown}
+    ChromeTabScroll() {
+        thisKey := A_ThisHotkey
+        MouseGetPos,,   mouseYPos, winId
+        WinGetPos,,     winYPos,,, ahk_id %winId%
+        WinGetClass,    winClass, ahk_id %winId%
+        if mouseYPos - winYPos < 45 AND InStr(winClass, "Chrome_WidgetWin_1") {
+            if NOT WinActive("ahk_id" winId)
+                WinActivate ahk_id %winId%
+            if thisKey = WheelUp
+                SendInput ^{PgUp}
+            else
+                SendInput ^{PgDn}
+        } else {
+            SendInput {%thisKey%}
+        }
     }
-return
+;endregion
 ;endregion
 
 ; # Game Profiles
@@ -153,6 +161,14 @@ return
 ; -------------------------------
 ;region
 #If WinActive("ahk_exe Warframe.x64.exe") OR WinActive("ahk_exe Notepad.exe")
+WF_Init() {
+    global WF_ability  := new WF_AutoAbility()
+}
+
+WF_Transference() {
+    SendInput {NumpadDel}
+}
+
 class WF_AutoAbility {
     static MAX      := 4
     static MIN      := 1
@@ -181,7 +197,7 @@ class WF_AutoAbility {
         activate            := this._activate
         this["_Activate"]()
         SetTimer, % activate, % WF_AutoAbility.DELAY_MS[this.selectedAbility]
-        ShowToolTip(this.selectedAbility " Active")
+        ShowCenteredToolTip(this.selectedAbility " Active")
     }
 
     Deactivate() {
@@ -199,27 +215,19 @@ class WF_AutoAbility {
         }
     }
 
-    _NotifySelection() {
-        ShowToolTip(this.selectedAbility, 500)
-    }
-
     _Activate() {
         SendInput % this.selectedAbility
     }
 
+    _NotifySelection() {
+        ShowCenteredToolTip(this.selectedAbility, 500)
+    }
+
     __Delete() {
         activate := this._activate
-        SetTimer, % activate, Off
+        this.Deactivate()
     }
 }
-
-WF_Transference() {
-    SendInput {NumpadDel}
-}
-
-WF_Init:
-    WF_ability  := new WF_AutoAbility()
-return
 
 WF_PrevAbility:
 F20::WF_ability.SelectPrev()
