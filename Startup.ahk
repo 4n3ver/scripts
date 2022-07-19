@@ -21,17 +21,11 @@ SetCapsLockState    AlwaysOff
 SetNumLockState     AlwaysOn
 Menu,               Tray, Tip, Startup.ahk (0.0a)
 
-; ## WatchDogs Initializer
-; -------------------------------
-; Initializer WatchDog scripts
-;region
-SetTimer, AfterBurnerWatchDog, 300000   ; Timer for 5 minutes
-;endregion
-
 ; ## Profile initializer
 ; -------------------------------
 ; For profile that requires initialization
 ;region
+Gosub Init
 Gosub WF_Init
 ;endregion
 
@@ -42,66 +36,83 @@ return
 ; -------------------------------
 ; General utilities.
 ;region
-class AutoFire {
-    __New(key, delay = 200) {
-        this.targetKey  := key
-        this.delay      := -delay
-        this.active     := False
-        this._fire      := this["_Fire"].Bind(this)
+AutoFire(srcKey, targetKey, delay = 100) {
+    while GetKeyState(srcKey, "P") {
+        SendInput   % targetKey
+        Sleep       % delay
     }
+}
 
-    Fire() {
-        targetKey       := this.targetKey
-        this.active     := True
-        this["_Fire"]()
-        KeyWait % A_ThisHotkey
-        this.Stop()
-    }
+ClearClipboard() {
+    clipboard := ""
+    ShowInfoTrayTip("ClearClipboard", "Clipboard Cleared!")
+}
 
-    Stop() {
-        this.active := False
-    }
+HideToolTip() {
+    ToolTip
+}
 
-    _Fire() {
-        fire        := this._fire
-        targetKey   := this.targetKey
-        delay       := this.delay
-        Send % targetKey
-        if this.active {
-            SetTimer, % fire, % delay
-        }
-    }
+ShowToolTip(msg, duration = 0) {
+    ToolTip % msg
+    if duration > 0
+        SetTimer, HideToolTip, % -duration
+}
 
-    __Delete() {
-        fire := this._fire
-        SetTimer, % fire, Off
-        this.Stop()
+HideTrayTip() {
+    TrayTip  ; Attempt to hide it the normal way.
+    if SubStr(A_OSVersion, 1, 3) = "10." {
+        Menu    Tray, NoIcon
+        Sleep   200  ; It may be necessary to adjust this sleep.
+        Menu    Tray, Icon
     }
+}
+
+ShowTrayTip(title, msg, duration = 0, options = 0) {
+    TrayTip, % title, % msg, % duration, % options
+    if duration > 0
+        SetTimer, HideTrayTip, % -duration
+}
+
+ShowInfoTrayTip(title, msg, duration = 0) {
+    ShowTrayTip(title, msg, duration, 1 + 16)
+}
+
+ShowWarnTrayTip(title, msg, duration = 0) {
+    ShowTrayTip(title, msg, duration, 2)
+}
+
+ShowErrorTrayTip(title, msg, duration = 0) {
+    ShowTrayTip(title, msg, duration, 3 + 32)
 }
 ;endregion
 
-; # WatchDogs
+; # Default Profile
 ; -------------------------------
-; Periodic scripts.
-;region
-AfterBurnerWatchDog:
-    Process, Exist, MSIAfterburner.exe  ; check to see if MSIAfterburner.exe is running
+AfterBurnerWatchDog() {
+    Process, Exist, MSIAfterburner.exe      ; check to see if MSIAfterburner.exe is running
     {
         if ! errorLevel {
             afterBurnerPath := "D:\scoop\apps\msiafterburner\current\MSIAfterburner.exe"
             if FileExist(afterBurnerPath) {
-                MsgBox Starting AfterBurner
+                ShowInfoTrayTip("AfterBurnerWatchDog", "Starting AfterBurner!")
                 Run *RunAs %afterBurnerPath% /s
-            } else
-                MsgBox MSIAfterburner.exe was not found!
+            } else {
+                ShowErrorTrayTip("AfterBurnerWatchDog", "MSIAfterburner.exe was not found!")
+            }
+        } else {
+            ; ShowToolTip("AfterBurner is Running", 2000)
         }
-        ; else
-        ;   MsgBox "AfterBurner is Running"
     }
-return
-;endregion
+}
 
-; # Mouse Wheel Tab Scroll 4 Chrome
+Init:
+    SetTimer, AfterBurnerWatchDog, 300000   ; Timer for 5 minutes
+return
+
+AutoClearClipboard:
+~^c::SetTimer, ClearClipboard, -900000      ; Clear clipboard 15 minutes after copying
+
+; ## Mouse Wheel Tab Scroll 4 Chrome
 ; -------------------------------
 ; Scroll though Chrome tabs with your mouse wheel when hovering over the tab bar.
 ; if the Chrome window is inactive when starting to scroll, it will be activated.
@@ -118,14 +129,14 @@ WheelDown::
         if NOT WinActive("ahk_id" winId)
             WinActivate ahk_id %winId%
         if isWheelUp
-            Send ^{PgUp}
+            SendInput ^{PgUp}
         else
-            Send ^{PgDn}
+            SendInput ^{PgDn}
     } else {
         if isWheelUp
-            Send {WheelUp}
+            SendInput {WheelUp}
         else
-            Send {WheelDown}
+            SendInput {WheelDown}
     }
 return
 ;endregion
@@ -185,7 +196,7 @@ class WF_AutoAbility {
     }
 
     _Activate() {
-        Send % this.selectedAbility
+        SendInput % this.selectedAbility
     }
 
     __Delete() {
@@ -194,10 +205,12 @@ class WF_AutoAbility {
     }
 }
 
+WF_Transference() {
+    SendInput {NumpadDel}
+}
+
 WF_Init:
     WF_ability  := new WF_AutoAbility()
-    WF_altFire  := new AutoFire("{NumpadDiv}", 50)
-    WF_fire     := new AutoFire("{NumpadMult}", 35)
 return
 
 WF_PrevAbility:
@@ -210,22 +223,10 @@ WF_ToggleAbility:
 MButton::WF_ability.Toggle()
 
 WF_AutoAltFire:
-; F14::WF_altFire.Fire()
-F14::
-    while GetKeyState("F14", "P") {
-        Send {NumpadDiv}
-        Sleep 50
-    }
-return
+F14::AutoFire(A_ThisHotkey, "{NumpadDiv}", 50)
 
 WF_AutoFire:
-; F15::WF_fire.Fire()
-F15::
-    while GetKeyState("F15", "P") {
-        Send {NumpadMult}
-        Sleep 35
-    }
-return
+F15::AutoFire(A_ThisHotkey, "{NumpadMult}", 35)
 
 WF_Crouch:
 F16::v
@@ -240,16 +241,12 @@ WheelRight::\
 WF_Archwing:
 F13::Numpad1
 
-WF_Transference:
-    Send    {NumpadDel}
-return
-
 ; need to add delay to flash
-WF_TransferenceFlash:
+WF_Transference:
 F17::
-    Gosub   WF_Transference
-    Sleep   125
-    Send    2
+    WF_Transference()
+    Sleep       125
+    SendInput   2
 return
 
 WF_Necramech:
@@ -261,13 +258,13 @@ F13::Numpad2
 
 WF_WellSpring:
 F17::
-    Gosub   WF_Transference
-    Sleep   300
-    Send    1
-    Sleep   750
-    Send    1
-    Sleep   1300
-    Gosub   WF_Transference
+    WF_Transference()
+    Sleep       300
+    SendInput   1
+    Sleep       750
+    SendInput   1
+    Sleep       1300
+    WF_Transference()
 return
 
 WF_ArchGun:
