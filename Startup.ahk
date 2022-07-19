@@ -167,11 +167,13 @@ class WF_AutoAbility {
     SelectNext() {
         if !this.abilityActive AND this.selectedAbility < WF_AutoAbility.MAX
             this.selectedAbility++
+        this["_NotifySelection"]()
     }
 
     SelectPrev() {
         if !this.abilityActive AND this.selectedAbility > WF_AutoAbility.MIN
             this.selectedAbility--
+        this["_NotifySelection"]()
     }
 
     Activate() {
@@ -179,12 +181,14 @@ class WF_AutoAbility {
         activate            := this._activate
         this["_Activate"]()
         SetTimer, % activate, % WF_AutoAbility.DELAY_MS[this.selectedAbility]
+        ShowToolTip(this.selectedAbility " Active")
     }
 
     Deactivate() {
         this.abilityActive  := False
         activate            := this._activate
         SetTimer, % activate, Off
+        HideToolTip()
     }
 
     Toggle() {
@@ -193,6 +197,10 @@ class WF_AutoAbility {
         } else {
             this.Deactivate()
         }
+    }
+
+    _NotifySelection() {
+        ShowToolTip(this.selectedAbility, 500)
     }
 
     _Activate() {
