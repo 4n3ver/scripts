@@ -2,6 +2,7 @@
 #Persistent
 #InstallMouseHook
 #InstallKeybdHook
+#UseHook
 #NoEnv                                  ; Recommended for performance and compatibility with future AutoHotkey releases.
 #Warn                                   ; Enable warnings to assist with detecting common errors.
 #SingleInstance         force           ; Determines whether a script is allowed to run again when it is already running.
@@ -14,7 +15,7 @@
 ; -------------------------------
 ; https://www.autohotkey.com/docs/Scripts.htm#auto
 ;region
-SendMode            Input               ; Recommended for new scripts due to its superior speed and reliability.
+; SendMode            InputThenPlay       ; Recommended for new scripts due to its superior speed and reliability.
 SetScrollLockState  AlwaysOff
 SetCapsLockState    AlwaysOff
 SetNumLockState     AlwaysOn
@@ -43,38 +44,38 @@ return
 ;region
 class AutoFire {
     __New(key, delay = 200) {
-        this.key    := key
-        this.delay  := -delay
-        this.active := False
-        this._fire  := this.Fire.Bind(this)
+        this.targetKey  := key
+        this.delay      := -delay
+        this.active     := False
+        this._fire      := this["_Fire"].Bind(this)
     }
 
     Fire() {
-        fire    := this._fire
-        key     := this.key
-        delay   := this.delay
-        Send % key
+        targetKey       := this.targetKey
+        this.active     := True
+        this["_Fire"]()
+        KeyWait % A_ThisHotkey
+        this.Stop()
+    }
+
+    Stop() {
+        this.active := False
+    }
+
+    _Fire() {
+        fire        := this._fire
+        targetKey   := this.targetKey
+        delay       := this.delay
+        Send % targetKey
         if this.active {
             SetTimer, % fire, % delay
         }
     }
 
-    Enable() {
-        key         := this.key
-        this.active := True
-        this.Fire()
-        KeyWait % key
-        this.Disable()
-    }
-
-    Disable() {
-        this.active := False
-    }
-
     __Delete() {
         fire := this._fire
         SetTimer, % fire, Off
-        this.Disable()
+        this.Stop()
     }
 }
 ;endregion
@@ -149,7 +150,7 @@ class WF_AutoAbility {
     __New() {
         this.selectedAbility    := WF_AutoAbility.MIN
         this.abilityActive      := False
-        this._activate          := this.Activate.Bind(this)
+        this._activate          := this["_Activate"].Bind(this)
     }
 
     SelectNext() {
@@ -163,18 +164,28 @@ class WF_AutoAbility {
     }
 
     Activate() {
-        Send % this.selectedAbility
+        this.abilityActive  := True
+        activate            := this._activate
+        this["_Activate"]()
+        SetTimer, % activate, % WF_AutoAbility.DELAY_MS[this.selectedAbility]
+    }
+
+    Deactivate() {
+        this.abilityActive  := False
+        activate            := this._activate
+        SetTimer, % activate, Off
     }
 
     Toggle() {
-        this.abilityActive  := NOT this.abilityActive
-        activate            := this._activate
-        if this.abilityActive {
+        if NOT this.abilityActive {
             this.Activate()
-            SetTimer, % activate, % WF_AutoAbility.DELAY_MS[this.selectedAbility]
         } else {
-            SetTimer, % activate, Off
+            this.Deactivate()
         }
+    }
+
+    _Activate() {
+        Send % this.selectedAbility
     }
 
     __Delete() {
@@ -199,10 +210,22 @@ WF_ToggleAbility:
 MButton::WF_ability.Toggle()
 
 WF_AutoAltFire:
-F14::WF_altFire.Enable()
+; F14::WF_altFire.Fire()
+F14::
+    while GetKeyState("F14", "P") {
+        Send {NumpadDiv}
+        Sleep 50
+    }
+return
 
 WF_AutoFire:
-F15::WF_fire.Enable()
+; F15::WF_fire.Fire()
+F15::
+    while GetKeyState("F15", "P") {
+        Send {NumpadMult}
+        Sleep 35
+    }
+return
 
 WF_Crouch:
 F16::v

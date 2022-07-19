@@ -77,5 +77,6 @@ sudo pnpm add -g pnpm
 dotnet tool install fantomas-tool -g
 
 # Symlink home
-ln -s /mnt/c/Users/yoeli/.bashrc ~/.bashrc
-ln -s /mnt/c/Users/yoeli/.ssh ~/.ssh
+ln -s /mnt/c/Users/yoeli/.bashrc        ~/.bashrc
+ln -s /mnt/c/Users/yoeli/.bash_aliases  ~/.bash_aliases
+ln -s /mnt/c/Users/yoeli/.ssh           ~/.ssh
