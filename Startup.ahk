@@ -58,7 +58,7 @@ HideToolTip() {
 }
 
 ShowToolTip(msg, duration := 0, x := "", y := "", id := 1) {
-    ToolTip         % msg, % x, % y, % id
+    ToolTip % msg, % x, % y, % id
     if duration > 0
         SetTimer, HideToolTip, % -duration
 }
@@ -162,7 +162,7 @@ WheelDown::
 ;region
 #If WinActive("ahk_exe Warframe.x64.exe") OR WinActive("ahk_exe Notepad.exe")
 WF_Init() {
-    global WF_ability  := new WF_AutoAbility()
+    global WF_ability := new WF_AutoAbility()
 }
 
 WF_Transference() {
@@ -183,13 +183,11 @@ class WF_AutoAbility {
     SelectNext() {
         if !this.abilityActive AND this.selectedAbility < WF_AutoAbility.MAX
             this.selectedAbility++
-        this["_NotifySelection"]()
     }
 
     SelectPrev() {
         if !this.abilityActive AND this.selectedAbility > WF_AutoAbility.MIN
             this.selectedAbility--
-        this["_NotifySelection"]()
     }
 
     Activate() {
@@ -197,14 +195,12 @@ class WF_AutoAbility {
         activate            := this._activate
         this["_Activate"]()
         SetTimer, % activate, % WF_AutoAbility.DELAY_MS[this.selectedAbility]
-        ShowCenteredToolTip(this.selectedAbility " Active")
     }
 
     Deactivate() {
         this.abilityActive  := False
         activate            := this._activate
         SetTimer, % activate, Off
-        HideToolTip()
     }
 
     Toggle() {
@@ -216,27 +212,31 @@ class WF_AutoAbility {
     }
 
     _Activate() {
-        SendInput % this.selectedAbility
-    }
-
-    _NotifySelection() {
-        ShowCenteredToolTip(this.selectedAbility, 500)
+        Send % this.selectedAbility
     }
 
     __Delete() {
-        activate := this._activate
         this.Deactivate()
     }
 }
 
-WF_PrevAbility:
-F20::WF_ability.SelectPrev()
+WF_ToggleAbility:   ; MButton still went through
+MButton::WF_ability.Toggle()
+
+WF_TacticalMenu:
+WheelLeft::l
+
+WF_OmniTool:
+WheelRight::\
 
 WF_NextAbility:
 F19::WF_ability.SelectNext()
 
-WF_ToggleAbility:
-MButton::WF_ability.Toggle()
+WF_PrevAbility:
+F20::WF_ability.SelectPrev()
+
+WF_Archwing:
+F13::Numpad1
 
 WF_AutoAltFire:
 F14::AutoFire(A_ThisHotkey, "{NumpadDiv}", 50)
@@ -247,17 +247,6 @@ F15::AutoFire(A_ThisHotkey, "{NumpadMult}", 35)
 WF_Crouch:
 F16::v
 
-WF_TacticalMenu:
-WheelLeft::l
-
-WF_OmniTool:
-WheelRight::\
-
-#if WinActive("ahk_exe Warframe.x64.exe") AND !GetKeyState("RButton", "P")
-WF_Archwing:
-F13::Numpad1
-
-; need to add delay to flash
 WF_Transference:
 F17::
     WF_Transference()
@@ -268,12 +257,14 @@ return
 WF_Necramech:
 F18::Numpad3
 
-#if WinActive("ahk_exe Warframe.x64.exe") AND GetKeyState("RButton", "P")
+WF_AltFire:
+RButton & MButton::MButton
+
 WF_KDrive:
-F13::Numpad2
+RButton & F13::Numpad2
 
 WF_WellSpring:
-F17::
+RButton & F17::
     WF_Transference()
     Sleep       300
     SendInput   1
@@ -284,7 +275,7 @@ F17::
 return
 
 WF_ArchGun:
-F18::Numpad4
+RButton & F18::Numpad4
 ;endregion
 
 ; ## Fall Guys
