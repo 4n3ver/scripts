@@ -15,16 +15,15 @@
 ; -------------------------------
 ; https://www.autohotkey.com/docs/Scripts.htm#auto
 ;region
-; SendMode            InputThenPlay       ; Recommended for new scripts due to its superior speed and reliability.
 SetScrollLockState  AlwaysOff
 SetCapsLockState    AlwaysOff
 SetNumLockState     AlwaysOn
-CoordMode,          ToolTip, Screen
-CoordMode,          Pixel, Screen
-CoordMode,          Mouse, Screen
-CoordMode,          Caret, Screen
-CoordMode,          Menu, Screen
-Menu,               Tray, Tip, Startup.ahk (0.0a)
+CoordMode,          ToolTip,    Screen
+CoordMode,          Pixel,      Screen
+CoordMode,          Mouse,      Screen
+CoordMode,          Caret,      Screen
+CoordMode,          Menu,       Screen
+Menu,               Tray,       Tip,    Startup.ahk (0.0a)
 
 ; ## Profile initializer
 ; -------------------------------
@@ -257,8 +256,11 @@ return
 WF_Necramech:
 F18::Numpad3
 
+WF_Aim:
+RButton::RButton
+
 WF_AltFire:
-RButton & MButton::MButton
+RButton & MButton::NumpadDiv
 
 WF_KDrive:
 RButton & F13::Numpad2
