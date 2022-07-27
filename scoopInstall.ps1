@@ -39,6 +39,8 @@ scoop install `
     bat `
     calibre `
     ccleaner `
+    cemu `
+    cemuhook `
     cheat-engine `
     cowsay `
     cpu-z `

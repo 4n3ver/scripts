@@ -18,6 +18,8 @@
 SetScrollLockState  AlwaysOff
 SetCapsLockState    AlwaysOff
 SetNumLockState     AlwaysOn
+SendMode            InputThenPlay
+SetKeyDelay,        0, 0
 CoordMode,          ToolTip,    Screen
 CoordMode,          Pixel,      Screen
 CoordMode,          Mouse,      Screen
@@ -33,6 +35,7 @@ Init()
 WF_Init()
 ;endregion
 
+ShowInfoTrayTip(A_ScriptName, A_ScriptName " started!", 5000)
 return
 ;endregion
 
@@ -40,11 +43,25 @@ return
 ; -------------------------------
 ; General utilities.
 ;region
-AutoFire(srcKey, targetKey, delay := 100) {
-    while GetKeyState(srcKey, "P") {
-        Send    % targetKey
-        Sleep   % delay
+AutoFire(targetKey, delay := 100) {
+    heldKey := A_ThisHotkey
+    delay   := delay / 2
+
+    ; Issue with SendInput
+    ; https://www.autohotkey.com/boards/viewtopic.php?t=29748
+    ; https://www.autohotkey.com/boards/viewtopic.php?f=76&t=72583
+    while GetKeyState(heldKey, "P") {
+        SendEvent   {%targetKey% DOWN}
+        Sleep       % delay
+        SendEvent   {%targetKey% UP}
+        Sleep       % delay
     }
+}
+
+SendHold(key, holdTime = 250) {
+    Send    {%key% DOWN}
+    Sleep   % holdTime
+    Send    {%key% UP}
 }
 
 ClearClipboard() {
@@ -52,14 +69,16 @@ ClearClipboard() {
     ShowInfoTrayTip("ClearClipboard", "Clipboard Cleared!")
 }
 
-HideToolTip() {
-    ToolTip
+HideToolTip(id := 1) {
+    ToolTip,,,, % id
 }
 
 ShowToolTip(msg, duration := 0, x := "", y := "", id := 1) {
     ToolTip % msg, % x, % y, % id
-    if duration > 0
-        SetTimer, HideToolTip, % -duration
+    if (duration > 0) {
+        boundHideToolTip := Func("HideToolTip").Bind(id)
+        SetTimer, % boundHideToolTip, % -duration
+    }
 }
 
 ShowCenteredToolTip(msg, duration := 0, id := 1) {
@@ -68,11 +87,11 @@ ShowCenteredToolTip(msg, duration := 0, id := 1) {
 
 HideTrayTip() {
     TrayTip  ; Attempt to hide it the normal way.
-    if SubStr(A_OSVersion, 1, 3) = "10." {
-        Menu    Tray, NoIcon
-        Sleep   200  ; It may be necessary to adjust this sleep.
-        Menu    Tray, Icon
-    }
+    ; if SubStr(A_OSVersion, 1, 3) = "10." {
+    ;     Menu    Tray, NoIcon
+    ;     Sleep   1000  ; It may be necessary to adjust this sleep.
+    ;     Menu    Tray, Icon
+    ; }
 }
 
 ShowTrayTip(title, msg, duration := 0, options := 0) {
@@ -113,13 +132,28 @@ AfterBurnerWatchDog() {
                 ShowErrorTrayTip("AfterBurnerWatchDog", "MSIAfterburner.exe was not found!")
             }
         } else {
-            ; ShowToolTip("AfterBurner is Running", 2000)
+            ; ShowToolTip("AfterBurner is Running", 2000,,, 20)
         }
     }
 }
 
 AutoClearClipboard:
-~^c::SetTimer, ClearClipboard, -900000      ; Clear clipboard 15 minutes after copying
+~^x::
+~^c::
+    SetTimer, ClearClipboard, -900000      ; Clear clipboard 15 minutes after copying
+return
+
+ScriptReload:
+~^!r::
+    ShowToolTip("Reloading script...", 1000)
+    Sleep   1000
+    Reload
+    Sleep   5000
+    ShowErrorTrayTip("ScriptReload", "Failed to reload " A_ScriptName "!")
+return
+
+XBoxHome:
+VK07::F22
 
 ; ## Mouse Wheel Tab Scroll 4 Chrome
 ; -------------------------------
@@ -138,11 +172,11 @@ WheelDown::
             if NOT WinActive("ahk_id" winId)
                 WinActivate ahk_id %winId%
             if thisKey = WheelUp
-                SendInput ^{PgUp}
+                Send ^{PgUp}
             else
-                SendInput ^{PgDn}
+                Send ^{PgDn}
         } else {
-            SendInput {%thisKey%}
+            Send {%thisKey%}
         }
     }
 ;endregion
@@ -165,17 +199,24 @@ WF_Init() {
 }
 
 WF_Transference() {
-    SendInput {NumpadDel}
+    global WF_ability
+    wasPaused := WF_ability.Pause()
+    Send {NumpadDel}
+    if NOT wasPaused {
+        KeyWait NumpadDel
+        WF_ability.Resume()
+    }
 }
 
 class WF_AutoAbility {
     static MAX      := 4
     static MIN      := 1
-    static DELAY_MS := [200, 200, 200, 19000]
+    static DELAY_MS := [300, 300, 300, 19000]
 
     __New() {
         this.selectedAbility    := WF_AutoAbility.MIN
         this.abilityActive      := False
+        this._lastState         := False
         this._activate          := this["_Activate"].Bind(this)
     }
 
@@ -199,19 +240,37 @@ class WF_AutoAbility {
     Deactivate() {
         this.abilityActive  := False
         activate            := this._activate
-        SetTimer, % activate, Off
+        SetTimer,   % activate, Off
+        KeyWait     % this.selectedAbility
     }
 
     Toggle() {
-        if NOT this.abilityActive {
+        if NOT this.abilityActive
             this.Activate()
-        } else {
+        else
             this.Deactivate()
+    }
+
+    Pause() {
+        if this.abilityActive {
+            this._lastState := True
+            this.Deactivate()
+            return True
         }
+        return False
+    }
+
+    Resume() {
+        if this._lastState {
+            this._lastState := False
+            this.Activate()
+            return True
+        }
+        return False
     }
 
     _Activate() {
-        Send % this.selectedAbility
+        SendHold(this.selectedAbility, 250)
     }
 
     __Delete() {
@@ -238,10 +297,10 @@ WF_Archwing:
 F13::Numpad1
 
 WF_AutoAltFire:
-F14::AutoFire(A_ThisHotkey, "{NumpadDiv}", 50)
+F14::AutoFire("NumpadDiv", 50)
 
 WF_AutoFire:
-F15::AutoFire(A_ThisHotkey, "{NumpadMult}", 35)
+F15::AutoFire("NumpadMult", 35)
 
 WF_Crouch:
 F16::v
@@ -249,15 +308,12 @@ F16::v
 WF_Transference:
 F17::
     WF_Transference()
-    Sleep       125
-    SendInput   2
+    Sleep   125
+    Send    2
 return
 
 WF_Necramech:
 F18::Numpad3
-
-WF_Aim:
-RButton::RButton
 
 WF_AltFire:
 RButton & MButton::NumpadDiv
@@ -268,11 +324,11 @@ RButton & F13::Numpad2
 WF_WellSpring:
 RButton & F17::
     WF_Transference()
-    Sleep       300
-    SendInput   1
-    Sleep       750
-    SendInput   1
-    Sleep       1300
+    Sleep   300
+    Send    1
+    Sleep   750
+    Send    1
+    Sleep   1300
     WF_Transference()
 return
 

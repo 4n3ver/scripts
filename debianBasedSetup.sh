@@ -1,45 +1,65 @@
- # nodejs PPA
- # https://github.com/nodesource/distributions/blob/master/README.md#debinstall
+# nodejs PPA
+# https://github.com/nodesource/distributions/blob/master/README.md#debinstall
 curl -sL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+
+# openrazer for Ubuntu 22.04
+# https://software.opensuse.org/download.html?project=hardware%3Arazer&package=openrazer-meta
+echo 'deb http://download.opensuse.org/repositories/hardware:/razer/xUbuntu_22.04/ /' | sudo tee /etc/apt/sources.list.d/hardware:razer.list
+curl -fsSL https://download.opensuse.org/repositories/hardware:razer/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/hardware_razer.gpg > /dev/null
+
+# polychromatic PPA
+sudo add-apt-repository ppa:polychromatic/stable
 
 # dotnet PPA
 # https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#2004-
-wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
-sudo apt-get update && sudo apt-get install -y apt-transport-https
 
 # awscli ssm plugin
 # https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 curl https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb -o session-manager-plugin.deb
 sudo dpkg -i session-manager-plugin.deb && rm session-manager-plugin.deb
 
-# upgrade existing packages
-sudo apt update && sudo apt upgrade -y
+# https://wslutiliti.es/wslu/install.html
+sudo add-apt-repository ppa:wslutilities/wslu
 
-# upgrade operating system to latest release
-sudo do-release-upgrade
+# upgrade existing packages & operating system to latest release
+sudo apt update && sudo apt upgrade -y && sudo apt autoremove && sudo do-release-upgrade
+
+# Check after upgrade
+# code /etc/apt/sources.list.d/
 
 sudo apt install -y \
-    bat \
-    curl \
-    pv \
-    ncat \
-    traceroute \
-    git \
     awscli \
-    knot-dnsutils \
-    nodejs \
+    bat \
+    build-essential \
+    curl \
     dotnet-sdk-6.0 \
+    git \
+    hwdata \
+    iperf \
+    knot-dnsutils \
+    linux-headers-$(uname -r) \
+    linux-tools-virtual \
+    ncat \
+    net-tools \
+    nodejs \
     openjdk-8-jdk \
     openjdk-11-jdk \
     openjdk-17-jdk \
-    build-essential \
-    speedtest-cli \
-    net-tools \
-    iperf \
-    linux-headers-$(uname -r) \
+    openssh-server \
+    openrazer-meta \
+    polychromatic-cli \
+    pv \
     samba \
-    openssh-server
+    speedtest-cli \
+    traceroute \
+    ubuntu-wsl \
+    wslu
+
+# Usb passthrough support
+# https://github.com/dorssel/usbipd-win/wiki/WSL-support
+sudo update-alternatives --install /usr/local/bin/usbip usbip `ls /usr/lib/linux-tools/*/usbip | tail -n1` 20
 
 git config --global credential.helper "/mnt/d/scoop/apps/git/current/mingw64/libexec/git-core/git-credential-manager-core.exe"
 
