@@ -43,6 +43,10 @@ return
 ; -------------------------------
 ; General utilities.
 ;region
+RunAsync(task) {
+    SetTimer, % task, -1
+}
+
 AutoFire(targetKey, delay := 100) {
     heldKey := A_ThisHotkey
     delay   := delay / 2
@@ -194,20 +198,6 @@ WheelDown::
 ; -------------------------------
 ;region
 #If WinActive("ahk_exe Warframe.x64.exe") OR WinActive("ahk_exe Notepad.exe")
-WF_Init() {
-    global WF_ability := new WF_AutoAbility()
-}
-
-WF_Transference() {
-    global WF_ability
-    wasPaused := WF_ability.Pause()
-    Send {NumpadDel}
-    if NOT wasPaused {
-        KeyWait NumpadDel
-        WF_ability.Resume()
-    }
-}
-
 class WF_AutoAbility {
     static MAX      := 4
     static MIN      := 1
@@ -278,6 +268,20 @@ class WF_AutoAbility {
     }
 }
 
+WF_Init() {
+    global WF_ability := new WF_AutoAbility()
+}
+
+WF_Transference() {
+    global WF_ability
+    wasPaused := WF_ability.Pause()
+    Send {NumpadDel}
+    if NOT wasPaused {
+        KeyWait NumpadDel
+        WF_ability.Resume()
+    }
+}
+
 WF_ToggleAbility:   ; MButton still went through
 MButton::WF_ability.Toggle()
 
@@ -305,7 +309,7 @@ F15::AutoFire("NumpadMult", 35)
 WF_Crouch:
 F16::v
 
-WF_Transference:
+WF_TransferenceFlash:
 F17::
     WF_Transference()
     Sleep   125
