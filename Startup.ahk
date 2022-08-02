@@ -141,6 +141,11 @@ AfterBurnerWatchDog() {
     }
 }
 
+MediaControl:
+PrintScreen::Media_Prev
+ScrollLock::Media_Play_Pause
+Pause::Media_Next
+
 AutoClearClipboard:
 ~^x::
 ~^c::
