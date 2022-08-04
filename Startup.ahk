@@ -177,7 +177,8 @@ WheelDown::
         MouseGetPos,,   mouseYPos, winId
         WinGetPos,,     winYPos,,, ahk_id %winId%
         WinGetClass,    winClass, ahk_id %winId%
-        if mouseYPos - winYPos < 45 AND InStr(winClass, "Chrome_WidgetWin_1") {
+        yDiff   := mouseYPos - winYPos
+        if (yDiff > 0 AND yDiff < 45 AND InStr(winClass, "Chrome_WidgetWin_1")) {
             if NOT WinActive("ahk_id" winId)
                 WinActivate ahk_id %winId%
             if thisKey = WheelUp
@@ -202,7 +203,7 @@ WheelDown::
 ; ## Warframe
 ; -------------------------------
 ;region
-#If WinActive("ahk_exe Warframe.x64.exe") OR WinActive("ahk_exe Notepad.exe")
+#If WF_IsActive()
 class WF_AutoAbility {
     static MAX      := 4
     static MIN      := 1
@@ -265,7 +266,10 @@ class WF_AutoAbility {
     }
 
     _Activate() {
-        SendHold(this.selectedAbility, 250)
+        if WF_IsActive()
+            SendHold(this.selectedAbility, 250)
+        else
+            this.Deactivate()
     }
 
     __Delete() {
@@ -275,6 +279,10 @@ class WF_AutoAbility {
 
 WF_Init() {
     global WF_ability := new WF_AutoAbility()
+}
+
+WF_IsActive() {
+    return WinActive("ahk_exe Warframe.x64.exe") OR WinActive("ahk_exe Notepad.exe")
 }
 
 WF_Transference() {
@@ -348,7 +356,11 @@ RButton & F18::Numpad4
 ; ## Fall Guys
 ; -------------------------------
 ;region
-#If WinActive("ahk_exe FallGuys_client_game.exe")
+#If FG_IsActive()
+FG_IsActive() {
+    return WinActive("ahk_exe FallGuys_client_game.exe")
+}
+
 FG_Emotes:
 F13::1
 F14::2
