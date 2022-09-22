@@ -290,7 +290,44 @@ WheelDown::
 ; Shift Layer Button        : RButton
 ;region
 
-; ## Warframe
+; ## Game Default (GD)
+; -------------------------------
+;region
+#If GD_IsActive()
+GD_IsActive() {
+    static GAMES_EXE := [ "DragonAgeInquisition"
+                        , "MassEffect1"
+                        , "MassEffect2"
+                        , "MassEffect3"
+                        , "MassEffectAndromeda"
+                        , "witcher"
+                        , "witcher2"
+                        , "witcher3"
+                        , "GTA5"
+                        , "HorizonZeroDawn"
+                        , "NMS"
+                        , "Overcooked2"
+                        , "Notepad"
+                        , "WatchDogs2" ]
+    return WinAnyExeActive(GAMES_EXE . ".exe")
+}
+
+GD_TopButtons:
+F19::F19
+F20::F20
+
+GD_SideButtonsTopRow:
+F13::F13
+F14::F14
+F15::F15
+
+GD_SideButtonsBottomRow:
+F18::F18
+F17::F17
+F16::F16
+;endregion
+
+; ## Warframe (WF)
 ; -------------------------------
 ;region
 #If WF_IsActive()
@@ -422,9 +459,8 @@ return
 WF_Crouch:
 F16::v
 
-; This will be sent twice
 ; WF_Aim:
-; RButton::RButton
+; RButton::RButton  ; This will be sent twice
 
 WF_AltFire:
 RButton & MButton::NumpadDiv
@@ -447,7 +483,7 @@ RButton & F17::
 return
 ;endregion
 
-; ## Fall Guys
+; ## Fall Guys (FG)
 ; -------------------------------
 ;region
 #If FG_IsActive()
@@ -455,7 +491,6 @@ FG_IsActive() {
     return WinActive("ahk_exe FallGuys_client_game.exe")
 }
 
-FG_TopButtons:
 F19::F19
 F20::F20
 
@@ -470,42 +505,5 @@ F17::q
 
 FG_Grab:
 F16::e
-;endregion
-
-; ## Game Default
-; -------------------------------
-;region
-#If GD_IsActive()
-GD_IsActive() {
-    static GAMES_EXE := [ "DragonAgeInquisition.exe"
-                        , "MassEffect1.exe"
-                        , "MassEffect2.exe"
-                        , "MassEffect3.exe"
-                        , "MassEffectAndromeda.exe"
-                        , "witcher.exe"
-                        , "witcher2.exe"
-                        , "witcher3.exe"
-                        , "GTA5.exe"
-                        , "HorizonZeroDawn.exe"
-                        , "NMS.exe"
-                        , "Overcooked2.exe"
-                        , "Notepad.exe"
-                        , "WatchDogs2.exe" ]
-    return WinAnyExeActive(GAMES_EXE)
-}
-
-GD_TopButtons:
-F19::F19
-F20::F20
-
-GD_SideButtonsTopRow:
-F13::F13
-F14::F14
-F15::F15
-
-GD_SideButtonsBottomRow:
-F18::F18
-F17::F17
-F16::F16
 ;endregion
 ;endregion
