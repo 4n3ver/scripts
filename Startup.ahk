@@ -118,14 +118,15 @@ ShowErrorTrayTip(title, msg, duration := 0) {
 
 WinAnyExeActive(programs) {
     for index, program in programs
-        if WinActive("ahk_exe" program)
+        if WinActive("ahk_exe " . program)
             return True
     return False
 }
 ;endregion
 
-; # Default Profile
+; # Global Profile
 ; -------------------------------
+; Context-insensitive, active at all times.
 ;region
 Init() {
     SetTimer, AfterBurnerWatchDog, 300000   ; Timer for 5 minutes
@@ -170,24 +171,40 @@ Pause::Media_Next
 
 XBoxHome:
 VK07::F22
+;endregion
+
+; # Default Profile
+; -------------------------------
+; Default key bindings if no other profile is active.
+;region
+#If IsActive()
+IsActive() {
+    static PROFILES :=  [ "WF"
+                        , "FG"
+                        , "GD" ]
+    for index, profile in PROFILES
+        if Func(profile . "_IsActive").Call()
+            return False
+    return True
+}
 
 ; ## Desktop Mouse Binding
 ; -------------------------------
 ;region
-SwitchToRightVirtualDesktop:
+SwitchToLeftVirtualDesktop:
 WheelLeft::
     Send {RControl DOWN}
     Send {RWin DOWN}
-    Send {Right}
+    Send {Left}
     Send {RWin UP}
     Send {RControl UP}
 return
 
-SwitchToLeftVirtualDesktop:
+SwitchToRightVirtualDesktop:
 WheelRight::
     Send {RControl DOWN}
     Send {RWin DOWN}
-    Send {Left}
+    Send {Right}
     Send {RWin UP}
     Send {RControl UP}
 return
@@ -214,10 +231,10 @@ F13::
 return
 
 Forward:
-F14::XButton1
+F14::XButton2
 
 Back:
-F15::XButton2
+F15::XButton1
 
 HideDesktop:
 F18::
@@ -226,6 +243,7 @@ F18::
     Send {RWin UP}
 return
 
+LayerShift:
 F17::F17
 F16::RControl
 
@@ -391,8 +409,8 @@ F14::AutoFire("NumpadDiv", 50)
 WF_AutoFire:
 F15::AutoFire("NumpadMult", 35)
 
-WF_Crouch:
-F16::v
+WF_Necramech:
+F18::Numpad3
 
 WF_TransferenceFlash:
 F17::
@@ -401,9 +419,10 @@ F17::
     Send    2
 return
 
-WF_Necramech:
-F18::Numpad3
+WF_Crouch:
+F16::v
 
+; This will be sent twice
 ; WF_Aim:
 ; RButton::RButton
 
@@ -412,6 +431,9 @@ RButton & MButton::NumpadDiv
 
 WF_KDrive:
 RButton & F13::Numpad2
+
+WF_ArchGun:
+RButton & F18::Numpad4
 
 WF_WellSpring:
 RButton & F17::
@@ -423,9 +445,6 @@ RButton & F17::
     Sleep   1300
     WF_Transference()
 return
-
-WF_ArchGun:
-RButton & F18::Numpad4
 ;endregion
 
 ; ## Fall Guys
@@ -458,20 +477,20 @@ F16::e
 ;region
 #If GD_IsActive()
 GD_IsActive() {
-    GAMES_EXE := [ "DragonAgeInquisition.exe"
-                , "MassEffect1.exe"
-                , "MassEffect2.exe"
-                , "MassEffect3.exe"
-                , "MassEffectAndromeda.exe"
-                , "witcher.exe"
-                , "witcher2.exe"
-                , "witcher3.exe"
-                , "GTA5.exe"
-                , "HorizonZeroDawn.exe"
-                , "NMS.exe"
-                , "Overcooked2.exe"
-                , "Notepad.exe"
-                , "WatchDogs2.exe" ]
+    static GAMES_EXE := [ "DragonAgeInquisition.exe"
+                        , "MassEffect1.exe"
+                        , "MassEffect2.exe"
+                        , "MassEffect3.exe"
+                        , "MassEffectAndromeda.exe"
+                        , "witcher.exe"
+                        , "witcher2.exe"
+                        , "witcher3.exe"
+                        , "GTA5.exe"
+                        , "HorizonZeroDawn.exe"
+                        , "NMS.exe"
+                        , "Overcooked2.exe"
+                        , "Notepad.exe"
+                        , "WatchDogs2.exe" ]
     return WinAnyExeActive(GAMES_EXE)
 }
 
