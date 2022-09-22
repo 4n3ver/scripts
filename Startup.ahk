@@ -116,9 +116,9 @@ ShowErrorTrayTip(title, msg, duration := 0) {
     ShowTrayTip(title, msg, duration, 3 + 32)
 }
 
-WinAnyExeActive(programs) {
+WinAnyExeActive(programs*) {
     for index, program in programs
-        if WinActive("ahk_exe " . program)
+        if WinActive("ahk_exe " . program . ".exe")
             return True
     return False
 }
@@ -195,6 +195,7 @@ SwitchToLeftVirtualDesktop:
 WheelLeft::
     Send {RControl DOWN}
     Send {RWin DOWN}
+    Sleep 35
     Send {Left}
     Send {RWin UP}
     Send {RControl UP}
@@ -204,6 +205,7 @@ SwitchToRightVirtualDesktop:
 WheelRight::
     Send {RControl DOWN}
     Send {RWin DOWN}
+    Sleep 35
     Send {Right}
     Send {RWin UP}
     Send {RControl UP}
@@ -212,22 +214,28 @@ return
 OpenNotificationCenter:
 F19::
     Send {RWin DOWN}
+    Sleep 35
     Send n
     Send {RWin UP}
+    KeyWait, % A_ThisHotkey
 return
 
 OpenWidgets:
 F20::
     Send {RWin DOWN}
+    Sleep 35
     Send w
     Send {RWin UP}
+    KeyWait, % A_ThisHotkey
 return
 
 OpenTaskView:
 F13::
     Send {RWin DOWN}
+    Sleep 35
     Send {Tab}
     Send {RWin UP}
+    KeyWait, % A_ThisHotkey
 return
 
 Forward:
@@ -239,13 +247,16 @@ F15::XButton1
 HideDesktop:
 F18::
     Send {RWin DOWN}
+    Sleep 35
     Send d
     Send {RWin UP}
+    KeyWait, % A_ThisHotkey
 return
 
 LayerShift:
 F17::F17
-F16::RControl
+F16::Send {RControl DOWN}
+F16 UP::Send {RControl UP}
 
 F17 & MButton::Media_Play_Pause
 F17 & WheelLeft::Media_Prev
@@ -309,7 +320,7 @@ GD_IsActive() {
                         , "Overcooked2"
                         , "Notepad"
                         , "WatchDogs2" ]
-    return WinAnyExeActive(GAMES_EXE . ".exe")
+    return WinAnyExeActive(GAMES_EXE*)
 }
 
 GD_TopButtons:
@@ -332,9 +343,9 @@ F16::F16
 ;region
 #If WF_IsActive()
 class WF_AutoAbility {
-    static MAX      := 4
-    static MIN      := 1
     static DELAY_MS := [300, 300, 300, 19000]
+    static MIN      := WF_AutoAbility.DELAY_MS.MinIndex()
+    static MAX      := WF_AutoAbility.DELAY_MS.MaxIndex()
 
     __New() {
         this.selectedAbility    := WF_AutoAbility.MIN
