@@ -115,6 +115,13 @@ ShowWarnTrayTip(title, msg, duration := 0) {
 ShowErrorTrayTip(title, msg, duration := 0) {
     ShowTrayTip(title, msg, duration, 3 + 32)
 }
+
+WinAnyExeActive(programs) {
+    for index, program in programs
+        if WinActive("ahk_exe" program)
+            return True
+    return False
+}
 ;endregion
 
 ; # Default Profile
@@ -141,11 +148,6 @@ AfterBurnerWatchDog() {
     }
 }
 
-MediaControl:
-PrintScreen::Media_Prev
-ScrollLock::Media_Play_Pause
-Pause::Media_Next
-
 AutoClearClipboard:
 ~^x::
 ~^c::
@@ -161,8 +163,78 @@ ScriptReload:
     ShowErrorTrayTip("ScriptReload", "Failed to reload " A_ScriptName "!")
 return
 
+MediaControl:
+PrintScreen::Media_Prev
+ScrollLock::Media_Play_Pause
+Pause::Media_Next
+
 XBoxHome:
 VK07::F22
+
+; ## Desktop Mouse Binding
+; -------------------------------
+;region
+SwitchToRightVirtualDesktop:
+WheelLeft::
+    Send {RControl DOWN}
+    Send {RWin DOWN}
+    Send {Right}
+    Send {RWin UP}
+    Send {RControl UP}
+return
+
+SwitchToLeftVirtualDesktop:
+WheelRight::
+    Send {RControl DOWN}
+    Send {RWin DOWN}
+    Send {Left}
+    Send {RWin UP}
+    Send {RControl UP}
+return
+
+OpenNotificationCenter:
+F19::
+    Send {RWin DOWN}
+    Send n
+    Send {RWin UP}
+return
+
+OpenWidgets:
+F20::
+    Send {RWin DOWN}
+    Send w
+    Send {RWin UP}
+return
+
+OpenTaskView:
+F13::
+    Send {RWin DOWN}
+    Send {Tab}
+    Send {RWin UP}
+return
+
+Forward:
+F14::XButton1
+
+Back:
+F15::XButton2
+
+HideDesktop:
+F18::
+    Send {RWin DOWN}
+    Send d
+    Send {RWin UP}
+return
+
+F17::F17
+F16::RControl
+
+F17 & MButton::Media_Play_Pause
+F17 & WheelLeft::Media_Prev
+F17 & WheelRight::Media_Next
+F17 & WheelUp::Volume_Up
+F17 & WheelDown::Volume_Down
+;endregion
 
 ; ## Mouse Wheel Tab Scroll 4 Chrome
 ; -------------------------------
@@ -282,7 +354,7 @@ WF_Init() {
 }
 
 WF_IsActive() {
-    return WinActive("ahk_exe Warframe.x64.exe") OR WinActive("ahk_exe Notepad.exe")
+    return WinActive("ahk_exe Warframe.x64.exe") ;OR WinActive("ahk_exe Notepad.exe")
 }
 
 WF_Transference() {
@@ -298,17 +370,17 @@ WF_Transference() {
 WF_ToggleAbility:   ; MButton still went through
 MButton::WF_ability.Toggle()
 
-WF_TacticalMenu:
-WheelLeft::l
-
-WF_OmniTool:
-WheelRight::\
+WF_PrevAbility:
+WheelLeft::WF_ability.SelectPrev()
 
 WF_NextAbility:
-F19::WF_ability.SelectNext()
+WheelRight::WF_ability.SelectNext()
 
-WF_PrevAbility:
-F20::WF_ability.SelectPrev()
+WF_OmniTool:
+F19::\
+
+WF_TacticalMenu:
+F20::l
 
 WF_Archwing:
 F13::Numpad1
@@ -331,6 +403,9 @@ return
 
 WF_Necramech:
 F18::Numpad3
+
+; WF_Aim:
+; RButton::RButton
 
 WF_AltFire:
 RButton & MButton::NumpadDiv
@@ -361,6 +436,10 @@ FG_IsActive() {
     return WinActive("ahk_exe FallGuys_client_game.exe")
 }
 
+FG_TopButtons:
+F19::F19
+F20::F20
+
 FG_Emotes:
 F13::1
 F14::2
@@ -372,5 +451,42 @@ F17::q
 
 FG_Grab:
 F16::e
+;endregion
+
+; ## Game Default
+; -------------------------------
+;region
+#If GD_IsActive()
+GD_IsActive() {
+    GAMES_EXE := [ "DragonAgeInquisition.exe"
+                , "MassEffect1.exe"
+                , "MassEffect2.exe"
+                , "MassEffect3.exe"
+                , "MassEffectAndromeda.exe"
+                , "witcher.exe"
+                , "witcher2.exe"
+                , "witcher3.exe"
+                , "GTA5.exe"
+                , "HorizonZeroDawn.exe"
+                , "NMS.exe"
+                , "Overcooked2.exe"
+                , "Notepad.exe"
+                , "WatchDogs2.exe" ]
+    return WinAnyExeActive(GAMES_EXE)
+}
+
+GD_TopButtons:
+F19::F19
+F20::F20
+
+GD_SideButtonsTopRow:
+F13::F13
+F14::F14
+F15::F15
+
+GD_SideButtonsBottomRow:
+F18::F18
+F17::F17
+F16::F16
 ;endregion
 ;endregion
