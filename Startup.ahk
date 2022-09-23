@@ -25,7 +25,12 @@ CoordMode,          Pixel,      Screen
 CoordMode,          Mouse,      Screen
 CoordMode,          Caret,      Screen
 CoordMode,          Menu,       Screen
+Menu,               Tray,       Icon
 Menu,               Tray,       Tip,    Startup.ahk (0.0a)
+Menu,               Tray,       NoStandard
+Menu,               Tray,       Add ,   Key History,        ShowKeyHistory
+Menu,               Tray,       Add                                             ; Add Separator
+Menu,               Tray,       Standard                                        ; Add Standard menu
 
 ; ## Profile initializer
 ; -------------------------------
@@ -122,6 +127,10 @@ WinAnyExeActive(programs*) {
             return True
     return False
 }
+
+ShowKeyHistory() {
+    KeyHistory
+}
 ;endregion
 
 ; # Global Profile
@@ -192,50 +201,52 @@ IsActive() {
 ; -------------------------------
 ;region
 SwitchToLeftVirtualDesktop:
-WheelLeft::
-    Send {RControl DOWN}
-    Send {RWin DOWN}
-    Sleep 35
-    Send {Left}
-    Send {RWin UP}
-    Send {RControl UP}
+F21::
+    Send        {RControl DOWN}
+    Send        {RWin DOWN}
+    Sleep       35
+    Send        {Left}
+    Send        {RWin UP}
+    Send        {RControl UP}
+    KeyWait,    % A_ThisHotkey
 return
 
 SwitchToRightVirtualDesktop:
-WheelRight::
-    Send {RControl DOWN}
-    Send {RWin DOWN}
-    Sleep 35
-    Send {Right}
-    Send {RWin UP}
-    Send {RControl UP}
+F22::
+    Send        {RControl DOWN}
+    Send        {RWin DOWN}
+    Sleep       35
+    Send        {Right}
+    Send        {RWin UP}
+    Send        {RControl UP}
+    KeyWait,    % A_ThisHotkey
 return
 
 OpenNotificationCenter:
 F19::
-    Send {RWin DOWN}
-    Sleep 35
-    Send n
-    Send {RWin UP}
-    KeyWait, % A_ThisHotkey
+    Send        {RWin DOWN}
+    Sleep       35
+    Send        n
+    Send        {RWin UP}
+    KeyWait,    % A_ThisHotkey
 return
 
 OpenWidgets:
 F20::
-    Send {RWin DOWN}
-    Sleep 35
-    Send w
-    Send {RWin UP}
-    KeyWait, % A_ThisHotkey
+    Send        {RWin DOWN}
+    Sleep       35
+    Send        w
+    Send        {RWin UP}
+    KeyWait,    % A_ThisHotkey
 return
 
 OpenTaskView:
 F13::
-    Send {RWin DOWN}
-    Sleep 35
-    Send {Tab}
-    Send {RWin UP}
-    KeyWait, % A_ThisHotkey
+    Send        {RWin DOWN}
+    Sleep       35
+    Send        {Tab}
+    Send        {RWin UP}
+    KeyWait,    % A_ThisHotkey
 return
 
 Forward:
@@ -246,23 +257,32 @@ F15::XButton1
 
 HideDesktop:
 F18::
-    Send {RWin DOWN}
-    Sleep 35
-    Send d
-    Send {RWin UP}
-    KeyWait, % A_ThisHotkey
+    Send        {RWin DOWN}
+    Sleep       35
+    Send        d
+    Send        {RWin UP}
+    KeyWait,    % A_ThisHotkey
 return
 
-LayerShift:
-F17::F17
-F16::Send {RControl DOWN}
-F16 UP::Send {RControl UP}
+MouseLayerShift:
+RButton::RButton
+F17::
+    Send        {RShift DOWN}
+    KeyWait,    % A_ThisHotkey
+    Send        {RShift UP}
+return
+F16::
+    Send        {RControl DOWN}
+    KeyWait,    % A_ThisHotkey
+    Send        {RControl UP}
+return
 
-F17 & MButton::Media_Play_Pause
-F17 & WheelLeft::Media_Prev
-F17 & WheelRight::Media_Next
-F17 & WheelUp::Volume_Up
-F17 & WheelDown::Volume_Down
+MouseMediaControl:
+RButton & MButton::Media_Play_Pause
+RButton & WheelUp::Volume_Up
+RButton & WheelDown::Volume_Down
+RButton & F21::Media_Prev
+RButton & F22::Media_Next
 ;endregion
 
 ; ## Mouse Wheel Tab Scroll 4 Chrome
@@ -295,14 +315,15 @@ WheelDown::
 
 ; # Game Profiles
 ; -------------------------------
-; Top Buttons               : F19, F20
-; Side Buttons - Top Row    : F13, F14, F15
-; Side Buttons - Bottom Row : F18, F17, F16
-; Shift Layer Button        : RButton
 ;region
 
 ; ## Game Default (GD)
 ; -------------------------------
+; Horizontal Wheel          : F21, F22
+; Top Buttons               : F19, F20
+; Side Buttons - Top Row    : F13, F14, F15
+; Side Buttons - Bottom Row : F18, F17, F16
+; Shift Layer Button        : RButton
 ;region
 #If GD_IsActive()
 GD_IsActive() {
@@ -322,6 +343,10 @@ GD_IsActive() {
                         , "WatchDogs2" ]
     return WinAnyExeActive(GAMES_EXE*)
 }
+
+GD_HorizontalWheel:
+F21::F21
+F22::F22
 
 GD_TopButtons:
 F19::F19
@@ -437,10 +462,10 @@ WF_ToggleAbility:   ; MButton still went through
 MButton::WF_ability.Toggle()
 
 WF_PrevAbility:
-WheelLeft::WF_ability.SelectPrev()
+F21::WF_ability.SelectPrev()
 
 WF_NextAbility:
-WheelRight::WF_ability.SelectNext()
+F22::WF_ability.SelectNext()
 
 WF_OmniTool:
 F19::\
