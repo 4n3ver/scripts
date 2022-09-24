@@ -1,7 +1,15 @@
-﻿;region
+﻿; # Compiler Directives
+; -------------------------------
+; https://www.autohotkey.com/docs/misc/Ahk2ExeDirectives.htm
+;region
 ;@Ahk2Exe-Base              Unicode 64-bit
 ;@Ahk2Exe-SetName           Startup.ahk
 ;@Ahk2Exe-UpdateManifest    1,,, 1
+;endregion
+;region
+
+; # Directives
+; -------------------------------
 #Persistent
 #InstallMouseHook
 #InstallKeybdHook
@@ -30,7 +38,6 @@ CoordMode,          Pixel,      Screen
 CoordMode,          Mouse,      Screen
 CoordMode,          Caret,      Screen
 CoordMode,          Menu,       Screen
-Menu,               Tray,       Icon
 Menu,               Tray,       Tip,    %A_ScriptName% (0.0a)
 Menu,               Tray,       NoStandard
 Menu,               Tray,       Add,    Key History,        ShowKeyHistory
