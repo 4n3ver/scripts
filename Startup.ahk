@@ -1,4 +1,7 @@
 ﻿;region
+;@Ahk2Exe-Base              Unicode 64-bit
+;@Ahk2Exe-SetName           Startup.ahk
+;@Ahk2Exe-UpdateManifest    1,,, 1
 #Persistent
 #InstallMouseHook
 #InstallKeybdHook
@@ -15,6 +18,8 @@
 ; -------------------------------
 ; https://www.autohotkey.com/docs/Scripts.htm#auto
 ;region
+SetWorkingDir       % A_ScriptDir                                               ; Ensures a consistent starting directory.
+AutoTrim,           On
 SetScrollLockState  AlwaysOff
 SetCapsLockState    AlwaysOff
 SetNumLockState     AlwaysOn
@@ -26,9 +31,9 @@ CoordMode,          Mouse,      Screen
 CoordMode,          Caret,      Screen
 CoordMode,          Menu,       Screen
 Menu,               Tray,       Icon
-Menu,               Tray,       Tip,    Startup.ahk (0.0a)
+Menu,               Tray,       Tip,    %A_ScriptName% (0.0a)
 Menu,               Tray,       NoStandard
-Menu,               Tray,       Add ,   Key History,        ShowKeyHistory
+Menu,               Tray,       Add,    Key History,        ShowKeyHistory
 Menu,               Tray,       Add                                             ; Add Separator
 Menu,               Tray,       Standard                                        ; Add Standard menu
 
@@ -36,10 +41,29 @@ Menu,               Tray,       Standard                                        
 ; -------------------------------
 ; For profile that requires initialization
 ;region
+AFTERBURNER_PATH    := GetEnvVar("SCOOP") . "\apps\msiafterburner\current\MSIAfterburner.exe"
+AHK_COMPILER_PATH   := "ahk2exe.exe"
+PROFILES            :=  { "Warframe.x64.exe"            : "WF"
+                        , "FallGuys_client_game.exe"    : "FG"
+                        , "DragonAgeInquisition.exe"    : "GD"
+                        , "MassEffect1.exe"             : "GD"
+                        , "MassEffect2.exe"             : "GD"
+                        , "MassEffect3.exe"             : "GD"
+                        , "MassEffectAndromeda.exe"     : "GD"
+                        , "witcher.exe"                 : "GD"
+                        , "witcher2.exe"                : "GD"
+                        , "witcher3.exe"                : "GD"
+                        , "GTA5.exe"                    : "GD"
+                        , "HorizonZeroDawn.exe"         : "GD"
+                        , "NMS.exe"                     : "GD"
+                        , "Overcooked2.exe"             : "GD"
+                        , "Notepad.exe"                 : "WF"
+                        , "WatchDogs2.exe"              : "GD" }
+
 Init()
-WF_Init()
 ;endregion
 
+Sleep 2000
 ShowInfoTrayTip(A_ScriptName, A_ScriptName " started!", 5000)
 return
 ;endregion
@@ -52,14 +76,40 @@ RunAsync(task) {
     SetTimer, % task, -1
 }
 
+GetEnvVar(key) {
+    EnvGet, val, % key
+    return  val
+}
+
+GetObjectValues(obj) {
+    values  := []
+    for _, v in obj
+        values.Push(v)
+    return values
+}
+
+GetObjectKeys(obj) {
+    keys    := []
+    for k, _ in obj
+        keys.Push(k)
+    return keys
+}
+
+Unique(arr) {
+    values  := {}
+    for _, v in arr
+        values[v] := v
+    return GetObjectKeys(values)
+}
+
 AutoFire(targetKey, delay := 100) {
-    heldKey := A_ThisHotkey
+    thisKey := A_ThisHotkey
     delay   := delay / 2
 
     ; Issue with SendInput
     ; https://www.autohotkey.com/boards/viewtopic.php?t=29748
     ; https://www.autohotkey.com/boards/viewtopic.php?f=76&t=72583
-    while GetKeyState(heldKey, "P") {
+    while GetKeyState(thisKey, "P") {
         SendEvent   {%targetKey% DOWN}
         Sleep       % delay
         SendEvent   {%targetKey% UP}
@@ -121,15 +171,22 @@ ShowErrorTrayTip(title, msg, duration := 0) {
     ShowTrayTip(title, msg, duration, 3 + 32)
 }
 
-WinAnyExeActive(programs*) {
-    for index, program in programs
-        if WinActive("ahk_exe " . program . ".exe")
-            return True
-    return False
-}
-
 ShowKeyHistory() {
     KeyHistory
+}
+
+GetActiveWindow(mode) {
+    WinGet, name, % mode, a
+    return name
+}
+
+GetActiveProfile() {
+    global PROFILES
+    activeProfileName := PROFILES[GetActiveWindow("ProcessName")]
+    ; ShowToolTip(activeProfileName, 500)
+    return activeProfileName = ""
+        ? "Default"
+        : activeProfileName
 }
 ;endregion
 
@@ -138,6 +195,12 @@ ShowKeyHistory() {
 ; Context-insensitive, active at all times.
 ;region
 Init() {
+    global PROFILES
+    for _, profileName in Unique(GetObjectValues(PROFILES)) {
+        initFn := Func(profileName . "_Init")
+        if initFn != 0
+            initFn.Call()
+    }
     SetTimer, AfterBurnerWatchDog, 300000   ; Timer for 5 minutes
 }
 
@@ -145,10 +208,10 @@ AfterBurnerWatchDog() {
     Process, Exist, MSIAfterburner.exe      ; check to see if MSIAfterburner.exe is running
     {
         if ! errorLevel {
-            afterBurnerPath := "D:\scoop\apps\msiafterburner\current\MSIAfterburner.exe"
-            if FileExist(afterBurnerPath) {
+            global AFTERBURNER_PATH
+            if FileExist(AFTERBURNER_PATH) {
                 ShowInfoTrayTip("AfterBurnerWatchDog", "Starting AfterBurner!")
-                Run *RunAs %afterBurnerPath% /s
+                Run *RunAs %AFTERBURNER_PATH% /s
             } else {
                 ShowErrorTrayTip("AfterBurnerWatchDog", "MSIAfterburner.exe was not found!")
             }
@@ -164,14 +227,25 @@ AutoClearClipboard:
     SetTimer, ClearClipboard, -900000      ; Clear clipboard 15 minutes after copying
 return
 
-ScriptReload:
 ~^!r::
-    ShowToolTip("Reloading script...", 1000)
-    Sleep   1000
-    Reload
-    Sleep   5000
-    ShowErrorTrayTip("ScriptReload", "Failed to reload " A_ScriptName "!")
-return
+    ScriptReload() {
+        global AHK_COMPILER_PATH
+        try {
+            ShowToolTip("Compiling script...")
+            scriptFullPathNoExt := SubStr(A_ScriptFullPath, 1, -4)
+            scriptFullPath      := scriptFullPathNoExt . ".ahk"
+            compiledFullPath    := scriptFullPathNoExt . ".exe"
+            RunWait "%AHK_COMPILER_PATH%" /in "%scriptFullPath%"
+
+            ShowToolTip("Reloading script...", 750)
+            Sleep   850
+            Run     "%compiledFullPath%"
+            ExitApp
+        } catch ex {
+            ShowToolTip(ex, 10000)
+            ShowErrorTrayTip("ScriptReload", "Failed to reload " . A_ScriptName . "!")
+        }
+    }
 
 MediaControl:
 PrintScreen::Media_Prev
@@ -186,68 +260,60 @@ VK07::F22
 ; -------------------------------
 ; Default key bindings if no other profile is active.
 ;region
-#If IsActive()
-IsActive() {
-    static PROFILES :=  [ "WF"
-                        , "FG"
-                        , "GD" ]
-    for index, profile in PROFILES
-        if Func(profile . "_IsActive").Call()
-            return False
-    return True
-}
-
-; ## Desktop Mouse Binding
-; -------------------------------
-;region
-SwitchToLeftVirtualDesktop:
+#If GetActiveProfile() = "Default"
 F21::
-    Send        {RControl DOWN}
-    Send        {RWin DOWN}
-    Sleep       35
-    Send        {Left}
-    Send        {RWin UP}
-    Send        {RControl UP}
-    KeyWait,    % A_ThisHotkey
-return
+    SwitchToLeftVirtualDesktop() {
+        thisKey     := A_ThisHotkey
+        Send        {RControl DOWN}
+        Send        {RWin DOWN}
+        Sleep       35
+        Send        {Left}
+        Send        {RWin UP}
+        Send        {RControl UP}
+        KeyWait,    % thisKey
+    }
 
-SwitchToRightVirtualDesktop:
 F22::
-    Send        {RControl DOWN}
-    Send        {RWin DOWN}
-    Sleep       35
-    Send        {Right}
-    Send        {RWin UP}
-    Send        {RControl UP}
-    KeyWait,    % A_ThisHotkey
-return
+    SwitchToRightVirtualDesktop() {
+        thisKey     := A_ThisHotkey
+        Send        {RControl DOWN}
+        Send        {RWin DOWN}
+        Sleep       35
+        Send        {Right}
+        Send        {RWin UP}
+        Send        {RControl UP}
+        KeyWait,    % thisKey
+    }
 
-OpenNotificationCenter:
 F19::
-    Send        {RWin DOWN}
-    Sleep       35
-    Send        n
-    Send        {RWin UP}
-    KeyWait,    % A_ThisHotkey
-return
+    OpenNotificationCenter() {
+        thisKey     := A_ThisHotkey
+        Send        {RWin DOWN}
+        Sleep       35
+        Send        n
+        Send        {RWin UP}
+        KeyWait,    % thisKey
+    }
 
-OpenWidgets:
 F20::
-    Send        {RWin DOWN}
-    Sleep       35
-    Send        w
-    Send        {RWin UP}
-    KeyWait,    % A_ThisHotkey
-return
+    OpenWidgets() {
+        thisKey     := A_ThisHotkey
+        Send        {RWin DOWN}
+        Sleep       35
+        Send        w
+        Send        {RWin UP}
+        KeyWait,    % thisKey
+    }
 
-OpenTaskView:
 F13::
-    Send        {RWin DOWN}
-    Sleep       35
-    Send        {Tab}
-    Send        {RWin UP}
-    KeyWait,    % A_ThisHotkey
-return
+    OpenTaskView() {
+        thisKey     := A_ThisHotkey
+        Send        {RWin DOWN}
+        Sleep       35
+        Send        {Tab}
+        Send        {RWin UP}
+        KeyWait,    % thisKey
+    }
 
 Forward:
 F14::XButton2
@@ -255,27 +321,32 @@ F14::XButton2
 Back:
 F15::XButton1
 
-HideDesktop:
 F18::
-    Send        {RWin DOWN}
-    Sleep       35
-    Send        d
-    Send        {RWin UP}
-    KeyWait,    % A_ThisHotkey
-return
+    HideDesktop() {
+        thisKey     := A_ThisHotkey
+        Send        {RWin DOWN}
+        Sleep       35
+        Send        d
+        Send        {RWin UP}
+        KeyWait,    % thisKey
+    }
 
-MouseLayerShift:
+MouseLayers:
 RButton::RButton
 F17::
-    Send        {RShift DOWN}
-    KeyWait,    % A_ThisHotkey
-    Send        {RShift UP}
-return
+    MouseShift() {
+        thisKey     := A_ThisHotkey
+        Send        {RShift DOWN}
+        KeyWait,    % thisKey
+        Send        {RShift UP}
+    }
 F16::
-    Send        {RControl DOWN}
-    KeyWait,    % A_ThisHotkey
-    Send        {RControl UP}
-return
+    MouseControl() {
+        thisKey     := A_ThisHotkey
+        Send        {RControl DOWN}
+        KeyWait,    % thisKey
+        Send        {RControl UP}
+    }
 
 MouseMediaControl:
 RButton & MButton::Media_Play_Pause
@@ -283,7 +354,6 @@ RButton & WheelUp::Volume_Up
 RButton & WheelDown::Volume_Down
 RButton & F21::Media_Prev
 RButton & F22::Media_Next
-;endregion
 
 ; ## Mouse Wheel Tab Scroll 4 Chrome
 ; -------------------------------
@@ -294,7 +364,7 @@ RButton & F22::Media_Next
 WheelUp::
 WheelDown::
     ChromeTabScroll() {
-        thisKey := A_ThisHotkey
+        thisKey         := A_ThisHotkey
         MouseGetPos,,   mouseYPos, winId
         WinGetPos,,     winYPos,,, ahk_id %winId%
         WinGetClass,    winClass, ahk_id %winId%
@@ -325,25 +395,7 @@ WheelDown::
 ; Side Buttons - Bottom Row : F18, F17, F16
 ; Shift Layer Button        : RButton
 ;region
-#If GD_IsActive()
-GD_IsActive() {
-    static GAMES_EXE := [ "DragonAgeInquisition"
-                        , "MassEffect1"
-                        , "MassEffect2"
-                        , "MassEffect3"
-                        , "MassEffectAndromeda"
-                        , "witcher"
-                        , "witcher2"
-                        , "witcher3"
-                        , "GTA5"
-                        , "HorizonZeroDawn"
-                        , "NMS"
-                        , "Overcooked2"
-                        , "Notepad"
-                        , "WatchDogs2" ]
-    return WinAnyExeActive(GAMES_EXE*)
-}
-
+#If GetActiveProfile() = "GD"
 GD_HorizontalWheel:
 F21::F21
 F22::F22
@@ -366,7 +418,7 @@ F16::F16
 ; ## Warframe (WF)
 ; -------------------------------
 ;region
-#If WF_IsActive()
+#If GetActiveProfile() = "WF"
 class WF_AutoAbility {
     static DELAY_MS := [300, 300, 300, 19000]
     static MIN      := WF_AutoAbility.DELAY_MS.MinIndex()
@@ -429,7 +481,7 @@ class WF_AutoAbility {
     }
 
     _Activate() {
-        if WF_IsActive()
+        if GetActiveProfile() = "WF"
             SendHold(this.selectedAbility, 250)
         else
             this.Deactivate()
@@ -442,10 +494,6 @@ class WF_AutoAbility {
 
 WF_Init() {
     global WF_ability := new WF_AutoAbility()
-}
-
-WF_IsActive() {
-    return WinActive("ahk_exe Warframe.x64.exe") ;OR WinActive("ahk_exe Notepad.exe")
 }
 
 WF_Transference() {
@@ -461,11 +509,21 @@ WF_Transference() {
 WF_ToggleAbility:   ; MButton still went through
 MButton::WF_ability.Toggle()
 
-WF_PrevAbility:
-F21::WF_ability.SelectPrev()
+F21::
+    WF_PrevAbility() {
+        thisKey     := A_ThisHotkey
+        global WF_ability
+        WF_ability.SelectPrev()
+        KeyWait,    % thisKey
+    }
 
-WF_NextAbility:
-F22::WF_ability.SelectNext()
+F22::
+    WF_NextAbility() {
+        thisKey     := A_ThisHotkey
+        global WF_ability
+        WF_ability.SelectNext()
+        KeyWait,    % thisKey
+    }
 
 WF_OmniTool:
 F19::\
@@ -522,10 +580,9 @@ return
 ; ## Fall Guys (FG)
 ; -------------------------------
 ;region
-#If FG_IsActive()
-FG_IsActive() {
-    return WinActive("ahk_exe FallGuys_client_game.exe")
-}
+#If GetActiveProfile() = "FG"
+F21::F21
+F22::F22
 
 F19::F19
 F20::F20
