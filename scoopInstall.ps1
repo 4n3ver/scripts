@@ -38,10 +38,10 @@ scoop install `
     autohotkey `
     aws `
     bat `
+    bind `
     calibre `
     ccleaner `
     cemu `
-    cemuhook `
     cheat-engine `
     cowsay `
     cpu-z `
@@ -49,7 +49,6 @@ scoop install `
     ddu `
     delta `
     deno `
-    dig `
     dog `
     dotnet-sdk `
     draw.io `
@@ -57,28 +56,29 @@ scoop install `
     foobar2000 `
     gcc `
     git `
-    go `
     gpg4win `
     gpu-z `
     gradle `
     groovy `
+    gsudo `
     handbrake `
     hwinfo `
     iperf3 `
     jq `
     keepassxc `
+    languagetool-java `
     less `
     lsd `
     ln `
     madvr `
-    micronaut `
     msiafterburner `
     msikombustor `
-    nmap-portable `
+    nmap `
     nodejs-lts `
     obsidian `
-    oh-my-posh3 `
+    oh-my-posh `
     openssl `
+    pandoc `
     picard `
     pnpm `
     posh-docker `
@@ -88,6 +88,7 @@ scoop install `
     potplayer `
     prime95 `
     pwsh `
+    pypy `
     python `
     qbittorrent `
     recuva `
@@ -104,7 +105,6 @@ scoop install `
     springboot `
     stack `
     subtitleedit `
-    sudo `
     synctrayzor `
     sysinternals `
     texstudio `
@@ -121,10 +121,9 @@ scoop install `
     yuzu `
     zip `
     zotero `
-    zulu8 `
-    zulu11 `
-    zulu17-sdk `
-    zulu
+    zulu11-jdk `
+    zulu17-jdk `
+    zulu-jdk
 
 scoop update *
 

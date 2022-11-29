@@ -17,7 +17,7 @@
 #NoEnv                                  ; Recommended for performance and compatibility with future AutoHotkey releases.
 #Warn                                   ; Enable warnings to assist with detecting common errors.
 #SingleInstance         force           ; Determines whether a script is allowed to run again when it is already running.
-#MaxHotkeysPerInterval  1000            ; Avoids warning messages for high speed wheel users.
+#MaxHotkeysPerInterval  70              ; Avoids warning messages for high speed wheel users.
 #MaxThreadsPerHotkey    1
 #MaxThreadsBuffer       Off
 ;endregion
@@ -50,22 +50,35 @@ Menu,               Tray,       Standard                                        
 ;region
 AFTERBURNER_PATH    := GetEnvVar("SCOOP") . "\apps\msiafterburner\current\MSIAfterburner.exe"
 AHK_COMPILER_PATH   := "ahk2exe.exe"
-PROFILES            :=  { "Warframe.x64.exe"            : "WF"
-                        , "FallGuys_client_game.exe"    : "FG"
+PROFILES            :=  { "ACOdyssey.exe"               : "GD"
+                        , "avengers.exe"                : "GD"
+                        , "DevilMayCry5.exe"            : "GD"
+                        , "ds.exe"                      : "GD"
                         , "DragonAgeInquisition.exe"    : "GD"
+                        , "FallGuys_client_game.exe"    : "FG"
+                        , "ff7remake_.exe"              : "GD"
+                        , "ffxv_s.exe"                  : "GD"
+                        , "GTA5.exe"                    : "GD"
+                        , "Gwent.exe"                   : "GD"
+                        , "HorizonZeroDawn.exe"         : "GD"
                         , "MassEffect1.exe"             : "GD"
                         , "MassEffect2.exe"             : "GD"
                         , "MassEffect3.exe"             : "GD"
                         , "MassEffectAndromeda.exe"     : "GD"
+                        , "NMS.exe"                     : "GD"
+                        , "Notepad.exe"                 : "WF"
+                        , "Overcooked2.exe"             : "GD"
+                        , "RDR2.exe"                    : "GD"
+                        , "SkyrimSE.exe"                : "GD"
+                        , "starwarsbattlefrontii.exe"   : "GD"
+                        , "starwarsjedifallenorder.exe" : "GD"
+                        , "TombRaider.exe"              : "GD"
+                        , "VRChat.exe"                  : "GD"
+                        , "Warframe.x64.exe"            : "WF"
+                        , "WatchDogs2.exe"              : "GD"
                         , "witcher.exe"                 : "GD"
                         , "witcher2.exe"                : "GD"
-                        , "witcher3.exe"                : "GD"
-                        , "GTA5.exe"                    : "GD"
-                        , "HorizonZeroDawn.exe"         : "GD"
-                        , "NMS.exe"                     : "GD"
-                        , "Overcooked2.exe"             : "GD"
-                        , "Notepad.exe"                 : "WF"
-                        , "WatchDogs2.exe"              : "GD" }
+                        , "witcher3.exe"                : "GD" }
 
 Init()
 ;endregion
@@ -132,7 +145,7 @@ SendHold(key, holdTime = 250) {
 
 ClearClipboard() {
     clipboard := ""
-    ShowInfoTrayTip("ClearClipboard", "Clipboard Cleared!")
+    ; ShowInfoTrayTip("ClearClipboard", "Clipboard Cleared!")
 }
 
 HideToolTip(id := 1) {
@@ -222,8 +235,6 @@ AfterBurnerWatchDog() {
             } else {
                 ShowErrorTrayTip("AfterBurnerWatchDog", "MSIAfterburner.exe was not found!")
             }
-        } else {
-            ; ShowToolTip("AfterBurner is Running", 2000,,, 20)
         }
     }
 }
@@ -375,7 +386,7 @@ WheelDown::
         MouseGetPos,,   mouseYPos, winId
         WinGetPos,,     winYPos,,, ahk_id %winId%
         WinGetClass,    winClass, ahk_id %winId%
-        yDiff   := mouseYPos - winYPos
+        yDiff           := mouseYPos - winYPos
         if (yDiff > 0 AND yDiff < 45 AND InStr(winClass, "Chrome_WidgetWin_1")) {
             if NOT WinActive("ahk_id" winId)
                 WinActivate ahk_id %winId%
