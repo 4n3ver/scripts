@@ -23,6 +23,11 @@ sudo dpkg -i session-manager-plugin.deb && rm session-manager-plugin.deb
 # https://wslutiliti.es/wslu/install.html
 sudo add-apt-repository ppa:wslutilities/wslu
 
+# ooni probe cli
+# https://ooni.org/install/cli/ubuntu-debian
+sudo apt-key adv --verbose --keyserver hkp://keyserver.ubuntu.com --recv-keys 'B5A08F01796E7F521861B449372D1FF271F2DD50'
+echo "deb http://deb.ooni.org/ unstable main" | sudo tee /etc/apt/sources.list.d/ooniprobe.list
+
 # upgrade existing packages & operating system to latest release
 sudo apt update && sudo apt upgrade -y && sudo apt autoremove && sudo do-release-upgrade
 
@@ -44,13 +49,14 @@ sudo apt install -y \
     ncat \
     net-tools \
     nodejs \
-    openjdk-8-jdk \
-    openjdk-11-jdk \
+    ooniprobe-cli \
     openjdk-17-jdk \
     openssh-server \
     openrazer-meta \
     polychromatic-cli \
     pv \
+    python3 \
+    pypy3 \
     samba \
     speedtest-cli \
     traceroute \

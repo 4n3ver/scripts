@@ -137,7 +137,7 @@ AutoFire(targetKey, delay := 100) {
     }
 }
 
-SendHold(key, holdTime = 250) {
+SendHold(key, holdTime := 250) {
     Send    {%key% DOWN}
     Sleep   % holdTime
     Send    {%key% UP}

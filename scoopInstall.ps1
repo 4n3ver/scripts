@@ -81,6 +81,7 @@ scoop install `
     pandoc `
     picard `
     pnpm `
+    poetry `
     posh-docker `
     post-git `
     postgresql `
