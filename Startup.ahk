@@ -2,7 +2,7 @@
 ; -------------------------------
 ; https://www.autohotkey.com/docs/misc/Ahk2ExeDirectives.htm
 ;region
-;@Ahk2Exe-Base              Unicode 64-bit
+;@Ahk2Exe-Base              D:\scoop\apps\autohotkey\current\v2\AutoHotkey64.exe
 ;@Ahk2Exe-SetName           Startup.ahk
 ;@Ahk2Exe-UpdateManifest    1,,, 1
 ;endregion
@@ -48,7 +48,7 @@ A_TrayMenu.AddStandard()                                                        
 ; For profile that requires initialization
 ;region
 AFTERBURNER_PATH    := EnvGet("SCOOP") "\apps\msiafterburner\current\MSIAfterburner.exe"
-AHK_COMPILER_PATH   := "ahk2exe.exe"
+AHK_COMPILER_PATH   := EnvGet("SCOOP") "\apps\autohotkey\current\Compiler\ahk2exe.exe"
 PROFILES            := Map(
                         "ACOdyssey.exe"                 , "GD",
                         "avengers.exe"                  , "GD",
@@ -201,7 +201,12 @@ GetActiveWindowProcessName() {
 
 GetActiveProfile() {
     global PROFILES
-    return PROFILES.Get(GetActiveWindowProcessName(), "Default")
+    try {
+        return PROFILES.Get(GetActiveWindowProcessName(), "Default")
+    } catch Error as ex {
+        ; ShowToolTip(ex.Message, 2000)
+        return "Default"
+    }
 }
 ;endregion
 
@@ -240,19 +245,28 @@ AutoClearClipboard:
 ~^!r::
     ScriptReload(thisKey) {
         global AHK_COMPILER_PATH
-        try {
-            ShowToolTip("Compiling script...")
-            scriptFullPathNoExt := SubStr(A_ScriptFullPath, 1, -4)
-            scriptFullPath      := scriptFullPathNoExt ".ahk"
-            compiledFullPath    := scriptFullPathNoExt ".exe"
-            RunWait(AHK_COMPILER_PATH " /in " scriptFullPath)
+        if FileExist(AHK_COMPILER_PATH) {
+            try {
+                ShowToolTip("Compiling script...")
+                scriptFullPathNoExt := SubStr(A_ScriptFullPath, 1, -4)
+                scriptFullPath      := scriptFullPathNoExt ".ahk"
+                compiledFullPath    := scriptFullPathNoExt ".exe"
+                exitCode            := RunWait(AHK_COMPILER_PATH " /in " scriptFullPath)
 
+                ShowToolTip("Reloading script...", 750)
+                Sleep(850)
+                Run(compiledFullPath)
+                ExitApp()
+            } catch Error as ex {
+                ShowToolTip(ex.Message, 10000)
+                ShowErrorTrayTip("ScriptReload", "Failed to reload " A_ScriptName "!")
+            }
+        } else {
+            ShowErrorTrayTip("ScriptReload", "ahk2exe.exe was not found!")
+            Sleep(5000)
             ShowToolTip("Reloading script...", 750)
             Sleep(850)
-            Run(compiledFullPath)
-            ExitApp()
-        } catch Error as ex {
-            ShowToolTip(ex.Message, 10000)
+            Reload
             ShowErrorTrayTip("ScriptReload", "Failed to reload " A_ScriptName "!")
         }
     }
