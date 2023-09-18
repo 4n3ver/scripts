@@ -23,7 +23,7 @@
 ;region
 Persistent(True)
 InstallMouseHook(True)
-InstallKeybdHook(True)              ; Avoids warning messages for high speed wheel users.
+InstallKeybdHook(True)
 SetWorkingDir(A_ScriptDir)          ; Ensures a consistent starting directory.
 SetScrollLockState("AlwaysOff")
 SetCapsLockState("AlwaysOff")
@@ -36,7 +36,7 @@ CoordMode("Mouse", "Screen")
 CoordMode("Caret", "Screen")
 CoordMode("Menu", "Screen")
 
-MaxHotkeysPerInterval   := 70
+MaxHotkeysPerInterval   := 70       ; Avoids warning messages for high speed wheel users.
 A_IconTip               := A_ScriptName " (0.0a)"
 A_TrayMenu.Delete()
 A_TrayMenu.Add("Key History", (itemName, itemPos, myMenu) => ShowKeyHistory())
@@ -565,8 +565,8 @@ F17:: {
 WF_Crouch:
 F16::v
 
-; WF_Aim:
-; RButton::RButton  ; This will be sent twice
+WF_Aim:
+RButton::RButton  ; This will be sent twice
 
 WF_AltFire:
 RButton & MButton::NumpadDiv

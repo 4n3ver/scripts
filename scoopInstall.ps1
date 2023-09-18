@@ -54,6 +54,8 @@ scoop install `
     draw.io `
     flac `
     foobar2000 `
+    fq `
+    fzf `
     gcc `
     git `
     gpg4win `
@@ -71,6 +73,7 @@ scoop install `
     lsd `
     ln `
     madvr `
+    mambaforge `
     msiafterburner `
     msikombustor `
     nmap `
@@ -88,6 +91,7 @@ scoop install `
     postman `
     potplayer `
     prime95 `
+    psfzf `
     pwsh `
     pypy `
     python `
@@ -95,6 +99,7 @@ scoop install `
     recuva `
     ripgrep `
     rtss `
+    rufus `
     rustup `
     sbt `
     scala `
@@ -157,7 +162,10 @@ git config --global init.defaultBranch main
 
 cargo install evcxr_repl
 
-dotnet tool install fantomas-tool -g
+dotnet tool install -g fantomas-tool
+
+conda init powershell
+conda config --set auto_activate_base false
 
 sudo New-ItemProperty `
     -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
@@ -199,3 +207,16 @@ sudo Add-DnsClientDohServerAddress `
     -ServerAddress 2606:4700:4700::1002 `
     -DohTemplate https://security.cloudflare-dns.com/dns-query `
     -AutoUpgrade 1
+
+# setup barrier TLS cert
+openssl req -x509 -nodes `
+    -days 365 `
+    -subj /CN=barrier `
+    -newkey rsa:4096 `
+    -keyout ~\AppData\Local\Barrier\SSL\Barrier.pem `
+    -out ~\AppData\Local\Barrier\SSL\Barrier.pem
+New-Item -Path ~\AppData\Local\Barrier\SSL\Fingerprints `
+    -ItemType directory `
+    -Force
+openssl x509 -fingerprint -sha256 -noout `
+    -in ~\AppData\Local\Barrier\SSL\Barrier.pem > ~\AppData\Local\Barrier\SSL\Fingerprints\Local.txt

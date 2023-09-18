@@ -40,6 +40,7 @@ sudo apt install -y \
     build-essential \
     curl \
     dotnet-sdk-6.0 \
+    fzf \
     git \
     hwdata \
     iperf \
@@ -101,6 +102,9 @@ sudo npm install -g pnpm
 sudo pnpm add -g pnpm
 
 dotnet tool install fantomas-tool -g
+
+# setup fzf auto-completion & keybindings
+cat /usr/share/doc/fzf/README.Debian
 
 # Symlink home
 ln -s /mnt/c/Users/yoeli/.bashrc        ~/.bashrc
